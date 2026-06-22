@@ -1,1 +1,265 @@
+# Specie disponibili in QgisTreeBenefits
 
+Libreria del plugin — **261 specie** (metodo Orebla / piattaforma ARBOREO di ALIAS ATP).
+
+- Abies alba L. - abete bianco
+- Abies cephalonica Loudon - abete greco
+- Abies concolor L. - abete del Colorado
+- Abies nebrodensis - abete dei Nebrodi
+- Abies nordmanniana - abete del Caucaso
+- Abies pinsapo Boiss. - abete di Spagna
+- Acacia dealbata Link - mimosa
+- Acer buergerianum Miq. - acero tridente
+- Acer campestre L. - acero campestre
+- Acer ginnala Maxim. - acero amurense
+- Acer monspessulanum L. - acero minore
+- Acer negundo L. - acero americano
+- Acer opulifolium Chaix - acero alpino
+- Acer palmatum Thunb. - Acero palmato
+- Acer platanoides L. - acero riccio
+- Acer pseudoplatanus L. - acero di monte
+- Acer rubrum
+- Acer saccharinum
+- Acer spp. - acero
+- Aesculus hippocastanum L. - ippocastano
+- Aesculus pavia L. - pavia
+- Ailanthus altissima Swingle - ailanto
+- Albizzia julibrissin Durazzo - gaggia
+- Alnus cordata (Loisel.) - ontano napoletano
+- Alnus glutinosa L.- ontano nero
+- Alnus incana Moench. - ontano bianco
+- Alnus spp. - ontano
+- Amelanchier × lamarckii F.G.Schroed.
+- Araucaria araucana K. Koch - araucaria
+- Araucaria heterophylla (Salisb.) Franco - pino di Norfolk
+- Araucaria spp. - araucaria
+- Arbutus unedo L. - corbezzolo
+- Bauhinia purpurea
+- Betula nigra
+- Betula papyrifera
+- Betula pendula Roth. - betulla bianca
+- Betula pubescens Ehrh. - betulla pelosa
+- Biota orientalis - biota
+- Brachychiton populneus
+- Brahea armata
+- Broussonetia papyrifera Vent. - moro da carta
+- Buxus sempervirens - Bosso
+- Calocedrus decurrens - cedro della California
+- Carpinus betulus L. - carpino bianco
+- Carya ovata  (Mill.) - noce bianco
+- Castanea sativa Miller - castagno
+- Casuarina spp. - casuarina
+- Catalpa bignonioides Walt. - catalpa
+- Cedrus atlantica - cedro dell'Atlante
+- Cedrus atlantica var. glauca - cedro dell'Atlante
+- Cedrus deodara G.Don - cedro dell'Himalaia
+- Cedrus libani Richard - cedro del Libano
+- Celtis australis L. - bagolaro
+- Celtis occidentalis
+- Ceratonia siliqua L. - carrubo
+- Cercidiphyllum japonicum
+- Cercis siliquastrum L. - albero di giuda
+- Chamaecyparis lawsoniana - Lawson
+- Chamaecyparis nootkatensis - cipresso di Nootka
+- Chamaecyparis spp. - falso cipresso
+- Chamaerops humilis L. - palma nana
+- Chimonanthus - calicanto
+- Chorisia speciosa
+- Cinnamomum camphora - canfora
+- Citrus aurantium
+- Citrus reticulata
+- Citrus sinensis Pers. - arancio
+- Cornus mas - Corniolo
+- Cornus mas L. - corniolo
+- Corylus avellana L. - nocciolo
+- Corylus colurna
+- Cotinus coggygria Scop. - scotano
+- Crataegus monogyna - Biancospino
+- Cryptomeria japonica Don - criptomeria
+- Cupressocyparis leylandi
+- Cupressus arizonica - cipresso dell'Arizona
+- Cupressus cashmeriana - cipresso del Kashmir
+- Cupressus macrocarpa - cipresso Monterey
+- Cupressus sempervirens L. - cipresso
+- Cupressus spp. - cipresso
+- Cydonia oblonga - cotogno
+- Diospyros kaki L. - diospero
+- Diospyros virginiana
+- Eryobotria japonica L. - nespolo giapponese
+- Erythrina christa-galli
+- Eucaliptus spp - eucalipto
+- Eucalyptus gunnii
+- Fagus sylvatica cv. atropurpurea - faggio rosso
+- Fagus sylvatica cv. purpurea - faggio rosso
+- Fagus sylvatica L. - faggio
+- Ficus carica L. - fico
+- Ficus microcarpa
+- Ficus spp. - fichi esotici
+- Firmiana simplex (L.) W.Wight - albero dei parasoli
+- Fraxinus americana - frassino bianco
+- Fraxinus excelsior L. - frassino maggiore
+- Fraxinus ornus L. - orniello
+- Fraxinus oxycarpa - frassino meridionale
+- Ginkgo biloba L. - ginkgo
+- Gleditsia triacanthos L. - spino di Giuda
+- Gleditsia triacanthos var.inermis - albero spino inerme
+- Grevillea robusta
+- Gymnocladus dioicus (L.) K.Koch - albero del caffè
+- Ilex aquifoliumL. - agrifoglio
+- Jacaranda mimosifolia
+- Jubaea chilensis
+- Juglans nigra L. - noce nero
+- Juglans regia L. - noce comune
+- Juniperus communis L. - ginepro comune
+- Juniperus oxycedrus L. - ginepro rosso
+- Juniperus virginiana L. - ginepro della Virginia
+- Koelreuteria paniculata Laxm. - koelreuteria
+- Laburnum anagyroides
+- Lagerstroemia indica L. - albero San Bartolomeo
+- Lagunaria patersonii
+- Larix decidua Miller - larice
+- Larix kaempferi (Lamb.) - larice giapponese
+- Laurus nobilis L. - alloro
+- Ligustrum lucidum Ait. - ligustro lucido
+- Ligustrum spp - Ligustro
+- Ligustrum texanum - Ligustro texano
+- Liquidambar styraciflua L. - liquidambar
+- Liriodendron tulipifera L. - albero dei tulipani
+- Maclura pomifera Schneider - maclura
+- Magnolia denudata - magnolia yulan
+- Magnolia grandiflora L. - magnolia
+- Magnolia obovata - magnolia giapponese
+- Magnolia stellata - magnolia stellata
+- Magnolia x soulangeana Solu. Bod.- magnolia
+- Malus floribunda - melo da fiore
+- Malus spp.
+- Malus sylvestris Mill. - melo
+- Melia azedarach L. - albero dei rosari
+- Mespilus germanica L. - nespolo
+- Metasequoia glyptostroboides - metasequoia
+- Morus alba L. - gelso bianco
+- Morus nigra L. - gelso nero
+- Musa paradisiaca - banano
+- ND
+- Nerium oleander
+- Nyssa sylvatica
+- Olea europea L. - olivo
+- Osmanthus fragrans Lour. - osmanto
+- Ostrya carpinifolia Scop. - carpino nero
+- Parrotia persica
+- Paulownia tomentosa Steud. - paulownia
+- Phellodendron amurense
+- Phillirea latifolia L. - fillirea
+- Phoenix canariensis C. - palma delle Canarie
+- Phoenix dactylifera L. - palma da datteri
+- Photinia Lindl.
+- Phytolacca dioica L. - fitolacca
+- Picea abies Karsten - abete rosso
+- Picea omorika Panč.- peccio di Serbia
+- Picea pungens Engelm. - abete del Colorado
+- Pinus brutia Tenore - pino calabrese
+- Pinus cembra L.- pino cembro
+- Pinus halepensis Miller - pino d'Aleppo
+- Pinus mugo - pino montano
+- Pinus nigra Arnold - pino nero
+- Pinus pinaster Aiton - pino marittimo
+- Pinus pinea L. - pino domestico
+- Pinus ponderosa Dougl.- pino giallo dell'ovest
+- Pinus radiata D.Don - pino insigne
+- Pinus spp. - pino
+- Pinus strobus L.- pino strobo
+- Pinus sylvestris L.- pino silvestre
+- Pinus uncinata Mill.- pino uncinato
+- Pinus wallichiana Jackson - pino dell'Himalaia
+- Pistacia terebinthus L. - terebinto
+- Pittosporum tobira Thunb. - pittosporo
+- Platanus occidentalis L. - platano comune
+- Platanus orientalis L. - platano orientale
+- Platanus x acerifolia Willd. - platano ibrido
+- Platycladus orientalis
+- Populus alba L. - pioppo bianco
+- Populus canescens (Ait.) - pioppo gatterino
+- Populus nigra L. - pioppo nero
+- Populus nigra var. italica - pioppo cipressino
+- Populus spp. - pioppo
+- Populus tremula L. - pioppo tremolo
+- Prunus amygdalus - mandorlo
+- Prunus armeniaca L. - albicocco
+- Prunus avium L. - ciliegio
+- Prunus cerasifera Ehrh - mirabolano
+- Prunus domestica L. - susino
+- Prunus glandulosa - mandorlo da fiore
+- Prunus laurocerasus L. - lauroceraso
+- Prunus lusitanica L. - lauro del Portogallo
+- Prunus padus L. - Pado
+- Prunus pissardi
+- Prunus serrulata
+- Prunus spp.
+- Prunus subhirtella
+- Pseudotsuga menziesii - abete di Douglas
+- Ptelea trifoliata - olmo di Samaria
+- Pterocarya fraxinifolia - noce del Caucaso
+- Punica granatum - melograno
+- Pyrus calleryana
+- Pyrus communis - pero
+- Pyrus pyraster L. - pero selvatico
+- Quercus bicolor Willd. - quercia bicolore
+- Quercus cerris L. - cerro
+- Quercus frainetto Ten. - farnetto
+- Quercus ilex L. - leccio
+- Quercus palustris - quercia delle paludi
+- Quercus petraea Liebl. - rovere
+- Quercus pubescens  Willd. - roverella
+- Quercus robur L. - farnia
+- Quercus robur “Fastigiata Koster” - quercia fastigiata Koster
+- Quercus rubra L. - quercia rossa
+- Quercus spp. - quercia
+- Quercus suber L: - sughera
+- Rhamnus alaternus L. - alaterno
+- Rhus typhina L. - sommaco
+- Robinia pseudoacacia L. - robinia
+- Salix alba L. - salice bianco
+- Salix babylonica L.- salice piangente
+- Salix caprea L. - salicone
+- Salix daphnoides Vill.- salice nero
+- Salix matsudana Koitz. - salice tortuoso
+- Salix spp. - salice
+- Sambucus nigra L.
+- Schinus molle
+- Sequoia sempervirens - sequoia
+- Sequoiadendron giganteum - sequoia gigante
+- Sorbus aria Cranz - sorbo montano
+- Sorbus aucaparia L. - sorbo degli uccellatori
+- Sorbus domestica L. - sorbo domestico
+- Sorbus torminalis Crantz - ciavardello
+- Styphnolobium japonicum (L.) Schott - sofora
+- Tamarix gallica L. - tamerice
+- Taxodium disticum L. - cipresso calvo
+- Taxus baccata L. - tasso
+- Thuja occidentalis L.- tuia
+- Thuja orientalis L.- albero della vita
+- Thuja plicata D.Don - tuia gigante
+- Tilia americana L. - Tiglio americano
+- Tilia cordata Mill. - tiglio selvatico
+- Tilia platyphyllos Scop. - tiglio nostrano
+- Tilia sp. - tiglio
+- Tilia tomentosa Moench - tiglio tomentoso
+- Tilia x europaea L. - tiglio ibrido
+- Tilia x vulgaris Hayne - tiglio ibrido
+- Trachycarpus fortunei Wendl. - trachycarpus
+- Tsuga canadensis L. - tsuga canadese
+- Ulmus glabra - olmo montano
+- Ulmus maior
+- Ulmus minor - olmo campestre
+- Ulmus parvifolia
+- Ulmus procera
+- Ulmus pumila - olmo siberiano
+- Ulmus resista
+- Ulmus spp. - olmo
+- Washingtonia filifera Wendl. - washingtonia
+- Wisteria Nutt.
+- Wisteria Sinensis
+- Yucca spp.
+- Zelkova carpinifolia Koch - zelkova
+- Zelkova spp.
+- Ziziphus jujuba Mill. - giuggiolo comune
