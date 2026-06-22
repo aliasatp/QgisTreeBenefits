@@ -1,1 +1,4 @@
-
+cod_alb,wkt,specie,provincia,fito,h,dbh,circonf,d_ch,inser_c,stadio,vital,p_soc,cond_staz,chioma_tr,cast_p,strumenti,dimora,organizzazione,fus_p,localizzazione,prec_annua,n_eventi_pioggia,prec_evento,rr_evento,tmax_media_estiva,vento_medio_estivo,umidita_rel_estiva,prec_giu_ago,n_eventi_giu_ago,rad_globale_giu_ago,latitudine,km_eco
+A001,POINT(11.4 45.5),Tilia cordata,VI,C,12,45,141,8,3,albero adulto,6,codominante,6,media,12,4,alberata stradale,centro città,nessuno,alberata stradale,900,95,60,30,33,2,65,140,12,2100,45.5,4
+A002,POINT(11.41 45.51),Platanus x acerifolia,VI,B,18,70,220,12,4,albero adulto avanzato,5,dominante interna,5,bassa,11,3,filare arboreo,periferia recente,tutela comunale,piazza,900,95,60,30,33,2,65,140,12,2100,45.51,6
+A003,POINT(11.39 45.49),Quercus ilex,RM,A,9,30,94,6,2,albero giovane,7,isolata,7,media,13,5,giardino recente,centro storico,nessuno,giardino recente,780,80,55,28,34,1.8,60,120,11,2200,41.9,0
