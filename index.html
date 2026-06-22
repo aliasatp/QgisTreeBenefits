@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QgisTreeBenefits — Guida d'uso</title>
+<style>
+  :root{
+    --green:#2e7d32; --green-d:#1b5e20; --green-l:#e8f3e9;
+    --ink:#1f2a24; --muted:#5f6b63; --line:#d9e3db; --bg:#ffffff;
+    --warn-bg:#fff4f2; --warn-bd:#e0b4ac; --warn-ink:#9c2a17;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink);background:var(--bg);line-height:1.6}
+  a{color:var(--green-d)}
+  header.hero{background:linear-gradient(135deg,var(--green),var(--green-d));color:#fff;
+    padding:48px 20px}
+  .wrap{max-width:980px;margin:0 auto;padding:0 20px}
+  header.hero h1{margin:0 0 6px;font-size:2.1rem;letter-spacing:.5px}
+  header.hero p{margin:0;opacity:.95;font-size:1.05rem}
+  .badges{margin-top:16px;display:flex;flex-wrap:wrap;gap:8px}
+  .badge{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);
+    border-radius:999px;padding:4px 12px;font-size:.82rem}
+  nav.toc{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);
+    padding:10px 0;z-index:5}
+  nav.toc .wrap{display:flex;flex-wrap:wrap;gap:6px}
+  nav.toc a{font-size:.85rem;text-decoration:none;color:var(--muted);
+    padding:4px 10px;border-radius:8px}
+  nav.toc a:hover{background:var(--green-l);color:var(--green-d)}
+  main{padding:24px 0 48px}
+  section{margin:34px 0}
+  h2{color:var(--green-d);border-bottom:2px solid var(--green-l);padding-bottom:6px;
+    margin-top:0;font-size:1.5rem}
+  h3{color:var(--green-d);margin-bottom:.3rem}
+  .lead{font-size:1.05rem;color:var(--muted)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}
+  .card{border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:#fff}
+  .card .n{display:inline-flex;align-items:center;justify-content:center;
+    width:30px;height:30px;border-radius:50%;background:var(--green);color:#fff;
+    font-weight:700;margin-bottom:8px}
+  ol.steps{padding-left:20px}
+  ol.steps li{margin:8px 0}
+  code,kbd{background:#f1f5f2;border:1px solid var(--line);border-radius:6px;
+    padding:1px 6px;font-size:.9em}
+  .path{font-family:ui-monospace,Menlo,Consolas,monospace}
+  .warn{background:var(--warn-bg);border:1px solid var(--warn-bd);color:var(--warn-ink);
+    border-radius:12px;padding:14px 16px}
+  .note{background:var(--green-l);border:1px solid #cfe3d1;border-radius:12px;
+    padding:14px 16px}
+  table{border-collapse:collapse;width:100%;font-size:.92rem}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+  th{background:var(--green-l);color:var(--green-d)}
+  tbody tr:nth-child(even){background:#fafdfb}
+  .tabs{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+  .tab{background:var(--green-l);color:var(--green-d);border:1px solid #cfe3d1;
+    border-radius:8px;padding:4px 10px;font-size:.85rem}
+  footer{border-top:1px solid var(--line);padding:24px 0;color:var(--muted);font-size:.9rem}
+  .muted{color:var(--muted)}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <h1>🌳 QgisTreeBenefits</h1>
+    <p>Stima dei benefici ambientali degli alberi urbani in QGIS — metodo Orebla &amp; modelli ALIAS ATP.</p>
+    <div class="badges">
+      <span class="badge">QGIS 3.22 → 4.99</span>
+      <span class="badge">Processing provider</span>
+      <span class="badge">261 specie · 107 province</span>
+      <span class="badge">v0.1 · ALIAS ATP</span>
+    </div>
+  </div>
+</header>
+
+<nav class="toc">
+  <div class="wrap">
+    <a href="#cosa">Cos'è</a>
+    <a href="#install">Installazione</a>
+    <a href="#strumenti">Strumenti</a>
+    <a href="#parametri">Parametri</a>
+    <a href="#output">Output</a>
+    <a href="#utm">UTM &amp; aree</a>
+    <a href="#metodo">Metodologia</a>
+    <a href="#crediti">Crediti</a>
+  </div>
+</nav>
+
+<main class="wrap">
+
+  <section id="cosa">
+    <h2>Cos'è</h2>
+    <p class="lead">QgisTreeBenefits riproduce in ambito QGIS i calcoli della <strong>piattaforma ARBOREO di ALIAS ATP</strong>: a partire da un dataset di punti‑albero stima, per ogni esemplare, il valore ecologico e ornamentale, il runoff evitato (annuo e da evento), il raffrescamento estivo e — opzionalmente — la CO₂ stoccata avanzata e alcune simulazioni di mobilità.</p>
+    <p>Il valore ornamentale ed ecologico segue il <strong>metodo Orebla</strong> (autore: <em>Luigi Sani</em>); i modelli di raffrescamento estivo e runoff evitato sono elaborati da <strong>ALIAS ATP</strong>.</p>
+    <div class="warn">⚠️ <strong>Uso dimostrativo e didattico.</strong> I risultati non costituiscono perizia, valutazione tecnica ufficiale o documento con valore legale o commerciale.</div>
+  </section>
+
+  <section id="install">
+    <h2>Installazione</h2>
+    <ol class="steps">
+      <li>Scarica l'archivio <code>QgisTreeBenefits.zip</code>.</li>
+      <li>In QGIS: <strong>Plugin → Gestisci e installa plugin → Installa da ZIP</strong>, seleziona l'archivio e installa.</li>
+      <li>Troverai gli strumenti in due punti:
+        <ul>
+          <li>la <strong>Cassetta degli strumenti di Processing</strong> → <span class="path">QgisTreeBenefits → Stima benefici alberi</span> (3 algoritmi);</li>
+          <li>il menu <strong>Plugin → QgisTreeBenefits → <em>Stima benefici (finestra a schede)…</em></strong>.</li>
+        </ul>
+      </li>
+    </ol>
+    <div class="note">Requisiti: QGIS 3.22 o superiore. Nessuna dipendenza esterna.</div>
+  </section>
+
+  <section id="strumenti">
+    <h2>Strumenti del plugin</h2>
+    <p>Flusso consigliato: <strong>crea o importa l'inventario → completa i parametri → esegui la stima benefici</strong>.</p>
+    <div class="grid">
+      <div class="card">
+        <span class="n">1</span>
+        <h3>Crea inventario alberi</h3>
+        <p>Crea un layer di punti vuoto con tutti i campi‑parametro, <strong>menu a tendina</strong> per i campi categoriali e <strong>modulo attributi a schede</strong> (Dati base / avanzati / climatici). Scegli il CRS (consigliato un UTM in metri), avvia l'editing e digitalizza gli alberi.</p>
+      </div>
+      <div class="card">
+        <span class="n">2</span>
+        <h3>Importa/adatta layer</h3>
+        <p>Trasforma un tuo layer di alberi in uno compatibile. La <strong>specie</strong> viene abbinata automaticamente alla libreria del plugin (nome più simile, con punteggio nel log); poi <strong>mappi i dati biometrici</strong>. Il risultato è già a schede e con le tendine, con specie e biometria precompilate.</p>
+      </div>
+      <div class="card">
+        <span class="n">3</span>
+        <h3>Stima benefici</h3>
+        <p>Il calcolo, con lo stesso motore in due modalità: <strong>finestra a schede</strong> (menu Plugin, più comoda) o <strong>algoritmo Processing</strong> (batch/Modellatore). Opzioni: CO₂ avanzata, mobilità, CRS di output (UTM), aree di influenza.</p>
+      </div>
+    </div>
+    <h3 style="margin-top:22px">Finestra a schede</h3>
+    <p>Apribile da <strong>Plugin → QgisTreeBenefits → <em>Stima benefici (finestra a schede)…</em></strong>. È organizzata in:</p>
+    <div class="tabs">
+      <span class="tab">Dati base</span>
+      <span class="tab">Dati avanzati</span>
+      <span class="tab">Dati climatici</span>
+      <span class="tab">Opzioni &amp; Output</span>
+      <span class="tab">ℹ Info</span>
+      <span class="tab">❔ Guida</span>
+    </div>
+    <p class="muted">Seleziona il layer di punti, associa ogni parametro a un campo (auto se i nomi coincidono) ed esegui. Vengono creati il layer dei risultati e, se richiesto, i poligoni delle aree di influenza.</p>
+  </section>
+
+  <section id="parametri">
+    <h2>Parametri di input</h2>
+    <p>Per ogni parametro si indica il campo del layer che lo contiene; se i nomi coincidono con quelli dell'inventario, la mappatura è automatica.</p>
+    <h3>Dati base</h3>
+    <p>Codice albero, specie, provincia, fascia fitoclimatica (A…E), altezza, DBH, circonferenza, diametro chioma, inserzione chioma, stadio fenologico, vitalità (1–7), posizione sociale.</p>
+    <h3>Dati avanzati</h3>
+    <p>Condizioni stazionali (1–7), trasparenza chioma, condizioni vegetative (1–13), integrità strutturale (1–5), tipo di dimora, organizzazione urbanistica, vincoli/tutele, localizzazione funzionale, <strong>fattore di riduzione</strong> (CO₂ avanzata), km percorsi al giorno (mobilità).</p>
+    <h3>Dati climatici</h3>
+    <p>Precipitazioni annue, n° eventi pioggia/anno, precipitazione evento, rain rate evento, T max media estiva, vento medio estivo, umidità relativa media, precipitazioni giu–ago, n° eventi giu–ago, radiazione globale giu–ago. <strong>Ogni voce climatica può provenire da un campo oppure da una costante</strong> uguale per tutti gli alberi.</p>
+    <div class="note">
+      <strong>Specie:</strong> id o nome (anche parziale). &nbsp;·&nbsp;
+      <strong>Provincia:</strong> sigla (VI) o nome (Vicenza), necessaria per il valore ornamentale. &nbsp;·&nbsp;
+      <strong>Latitudine:</strong> se non fornita, è ricavata dalla geometria del punto. &nbsp;·&nbsp;
+      <strong>Fattore di riduzione:</strong> da campo del layer o valore predefinito.
+    </div>
+  </section>
+
+  <section id="output">
+    <h2>Campi di output <code>ob_</code></h2>
+    <p>Il layer dei risultati conserva i campi originali e aggiunge i campi seguenti, con etichette e modulo a schede (Parametri albero · Riconoscimento · Valore &amp; ecologia · Runoff · Raffrescamento · CO₂ avanzata &amp; mobilità).</p>
+    <table>
+      <thead><tr><th>Campo</th><th>Significato</th></tr></thead>
+      <tbody>
+        <tr><td><code>ob_spec</code> / <code>ob_prov</code></td><td>specie / provincia riconosciute</td></tr>
+        <tr><td><code>ob_co2stoc</code></td><td>CO₂ stoccata / biomassa (kg)</td></tr>
+        <tr><td><code>ob_co2seq</code></td><td>CO₂ sequestrata (kg/anno)</td></tr>
+        <tr><td><code>ob_o2</code></td><td>O₂ prodotto (kg/anno)</td></tr>
+        <tr><td><code>ob_inq</code></td><td>inquinanti abbattuti (kg/anno)</td></tr>
+        <tr><td><code>ob_valeco</code></td><td>valore ambientale (€)</td></tr>
+        <tr><td><code>ob_valorn</code> / <code>ob_qorn</code></td><td>valore ornamentale netto (€) / Q ornamentale base</td></tr>
+        <tr><td><code>ob_valgl</code></td><td>valore globale (eco + orn) (€)</td></tr>
+        <tr><td><code>ob_runmc</code> / <code>ob_runeur</code> / <code>ob_runcls</code></td><td>runoff annuo: m³ / € / classe</td></tr>
+        <tr><td><code>ob_runevmc</code> / <code>ob_runevcl</code></td><td>runoff evento: m³ / classe</td></tr>
+        <tr><td><code>ob_raffdt</code></td><td>raffrescamento ΔT medio (°C)</td></tr>
+        <tr><td><code>ob_kwh</code> / <code>ob_raffco2</code> / <code>ob_raffeur</code></td><td>energia / CO₂ / € risparmiati (raffrescamento)</td></tr>
+        <tr><td><code>ob_area</code> / <code>ob_rinf</code></td><td>area / raggio di influenza (m² / m)</td></tr>
+        <tr><td><code>ob_dtN ob_dtE ob_dtO ob_dtS</code></td><td>ΔT per direzione (°C)</td></tr>
+        <tr><td><code>ob_co2avf</code> / <code>ob_valecav</code> / <code>ob_valglav</code></td><td>CO₂ avanzata / valore eco avanzato / globale avanzato</td></tr>
+        <tr><td><code>ob_mauto ob_mbus ob_mnauto ob_mnbus</code></td><td>mobilità: CO₂ auto/bus e alberi di compensazione</td></tr>
+      </tbody>
+    </table>
+    <p class="muted">I campi non calcolabili (input mancanti) restano <code>NULL</code>.</p>
+  </section>
+
+  <section id="utm">
+    <h2>Output in UTM e aree di influenza</h2>
+    <p>L'output viene riproiettato nel <strong>CRS UTM</strong> scelto (in metri): così <code>ob_rinf</code> (raggio) e <code>ob_area</code> (m²) sono direttamente utilizzabili per i buffer. Spuntando l'apposita opzione, il plugin genera anche i <strong>poligoni delle aree di influenza</strong> (buffer pari al raggio di influenza di ciascun albero), utili per mappe tematiche di estensione dei benefici.</p>
+  </section>
+
+  <section id="metodo">
+    <h2>Dataset e metodologia</h2>
+    <ul>
+      <li><strong>Valore ornamentale ed ecologico</strong> — metodo <strong>Orebla</strong> (autore: <em>Luigi Sani</em>), descritto nell'articolo su <a href="https://arborete.it/download.html">arborete.it</a>. L'opzione ecologica avanzata (contributo del settore branche, ridotto per un fattore di riduzione) è introdotta da ALIAS ATP.</li>
+      <li><strong>Raffrescamento estivo e runoff evitato</strong> — modelli di simulazione ambientale elaborati da <strong>ALIAS ATP</strong> (<a href="https://aliasinfo.it">aliasinfo.it</a>).</li>
+      <li><strong>Libreria specie:</strong> 261 specie (LAI, CRC, IRU base, gruppo funzionale).</li>
+      <li><strong>Province italiane:</strong> 107 province con fascia fitoclimatica Pavari e valori massimi Orebla (<code>valmax</code>).</li>
+    </ul>
+    <p>Il plugin riproduce i calcoli della <strong>piattaforma ARBOREO di ALIAS ATP</strong>.</p>
+    <h3>Dati di esempio</h3>
+    <p>Nella cartella <span class="path">esempio/</span> è incluso <code>alberi_esempio.csv</code> (WKT, EPSG:4326). In QGIS: <strong>Layer → Aggiungi layer → Testo delimitato</strong>, geometria WKT sul campo <code>wkt</code>.</p>
+  </section>
+
+  <section id="crediti">
+    <h2>Licenza e crediti</h2>
+    <ul>
+      <li><strong>Sviluppo plugin:</strong> ALIAS ATP — <a href="https://www.aliasinfo.it">aliasinfo.it</a> · alias@aliasinfo.it</li>
+      <li><strong>Metodo Orebla (valore ornamentale ed ecologico):</strong> Luigi Sani</li>
+      <li><strong>Raffrescamento estivo e runoff evitato:</strong> ALIAS ATP</li>
+      <li><strong>Riferimento:</strong> piattaforma ARBOREO di ALIAS ATP</li>
+    </ul>
+    <div class="warn">Strumento a scopo <strong>dimostrativo e didattico</strong>: i risultati non costituiscono perizia o valutazione tecnica ufficiale.</div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    QgisTreeBenefits · elaborazione <strong>ALIAS ATP</strong> ·
+    <a href="https://aliasinfo.it">aliasinfo.it</a> · alias@aliasinfo.it · © 2026
+  </div>
+</footer>
+
+</body>
+</html>
