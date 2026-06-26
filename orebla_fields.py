@@ -13,7 +13,6 @@ Contiene:
 
 from qgis.PyQt.QtCore import QVariant
 
-from . import orebla_core as C
 from .orebla_data import SPECIE_DATA, PROVINCE_DATA
 
 
@@ -283,9 +282,13 @@ def utm_epsg_from_lonlat(lon, lat):
 def build_out_attr_dict(feat_attrs, res, sp, pr):
     """Compone il dizionario nome->valore dei campi ob_ a partire dai risultati
     di orebla_core.compute_all(). Condiviso tra gli algoritmi."""
-    eco = res['eco']; orn = res['orn']; run = res['run']
-    run_ev = res['run_ev']; raff = res['raff']
-    co2av = res['co2av']; mob = res['mob']
+    eco = res['eco']
+    orn = res['orn']
+    run = res['run']
+    run_ev = res['run_ev']
+    raff = res['raff']
+    co2av = res['co2av']
+    mob = res['mob']
 
     def g(d, k):
         return d[k] if (d is not None and k in d and d[k] is not None) else None

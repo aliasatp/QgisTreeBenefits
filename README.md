@@ -1,183 +1,157 @@
-# QgisTreeBenefits
+# QgisTreeBenefits — plugin QGIS
 
-**Stima dei benefici ambientali degli alberi urbani in QGIS.**
+*Autore: **ALIAS ATP** · alias@aliasinfo.it · aliasinfo.it · QGIS ≥ 3.44*
 
-QgisTreeBenefits riproduce in ambito QGIS i calcoli della **piattaforma ARBOREO di ALIAS ATP**: a partire da un dataset di punti‑albero stima, per ogni esemplare, il valore ecologico, il valore ornamentale, il runoff evitato (annuo e da evento), il raffrescamento estivo e — opzionalmente — la CO₂ stoccata avanzata e alcune simulazioni di mobilità.
 
-Il valore ornamentale ed ecologico segue il **metodo Orebla** (autore: *Luigi Sani*); i modelli di raffrescamento estivo e runoff evitato sono elaborati da **ALIAS ATP**.
+Plugin **Processing** per QGIS che replica i calcoli della webapp Orebla e li
+applica in batch a un layer di **punti-albero**, restituendo un nuovo layer con
+le stime dei benefici ambientali per ogni albero.
 
-> ⚠️ **Uso dimostrativo e didattico.** I risultati non costituiscono perizia, valutazione tecnica ufficiale o documento con valore legale o commerciale.
+## Cosa calcola (per ogni albero)
 
-- **Autore:** ALIAS ATP — [aliasinfo.it](https://www.aliasinfo.it) — alias@aliasinfo.it
-- **Versione:** 0.1
-- **Compatibilità:** QGIS 3.22 → 4.99
-- **Categoria:** Analysis · *Processing provider*
+- **Valore ecologico**: biomassa / CO₂ stoccata (kg), CO₂ sequestrata (kg/anno),
+  O₂ prodotto (kg/anno), inquinanti abbattuti (kg/anno), valore ambientale (€).
+- **Valore ornamentale**: curva logistica RAM sul *valmax* provinciale, con
+  riduzioni fitosanitarie. Richiede la provincia.
+- **Runoff annuo** evitato (m³/anno) + risparmio idrico (€) + classe.
+- **Runoff da evento** (es. TR50) evitato (m³) + classe evento.
+- **Raffrescamento estivo**: ΔT medio e per le 4 direzioni (N/E/O/S), energia
+  risparmiata (kWh), CO₂ evitata (kg), risparmio (€), area e raggio di influenza.
+- **(opzionale) CO₂ avanzata**: biomassa branche/rami con riduzione patologica.
+- **(opzionale) Simulazioni mobilità**: CO₂ del tragitto casa↔scuola/lavoro e
+  numero di alberi equivalenti per compensarla.
 
----
-
-## Indice
-
-- [Caratteristiche](#caratteristiche)
-- [Requisiti](#requisiti)
-- [Installazione](#installazione)
-- [Strumenti del plugin](#strumenti-del-plugin)
-  - [1 · Crea inventario alberi](#1--crea-inventario-alberi-layer-vuoto-a-schede)
-  - [2 · Importa/adatta layer esistente](#2--importaadatta-layer-alberi-esistente)
-  - [3 · Stima benefici](#3--stima-benefici-ambientali)
-- [Parametri di input](#parametri-di-input)
-- [Campi di output](#campi-di-output-ob_)
-- [Output in UTM e aree di influenza](#output-in-utm-e-aree-di-influenza)
-- [Dataset e metodologia](#dataset-e-metodologia)
-- [Dati di esempio](#dati-di-esempio)
-- [Struttura del repository](#struttura-del-repository)
-- [Licenza e crediti](#licenza-e-crediti)
-
----
-
-## Caratteristiche
-
-- Calcolo dei benefici ambientali per ogni punto‑albero, fedele al modello ARBOREO/Orebla.
-- **Inventario alberi** generato come layer vuoto con **menu a tendina** e **modulo attributi a schede** (Dati base / avanzati / climatici).
-- **Importazione guidata** di un layer esistente, con **abbinamento automatico delle specie** alla libreria del plugin (nome più simile) e mappatura dei dati biometrici.
-- **Stima benefici** disponibile sia come **finestra a schede** (menu Plugin) sia come **algoritmo Processing** (batch/modellatore).
-- Dati climatici prelevabili **da un campo** del layer oppure inseribili come **costante** unica.
-- **Fattore di riduzione** (per la CO₂ avanzata) da campo o valore predefinito.
-- Output riproiettato in **UTM** (metri) e generazione opzionale dei **poligoni delle aree di influenza**.
-- Libreria di **261 specie** e **107 province** italiane.
-
-## Requisiti
-
-- QGIS **3.22 o superiore** (testato fino alla serie 4.x).
-- Nessuna dipendenza esterna: usa solo le librerie di QGIS/Qt e la libreria standard di Python.
+La logica, i coefficienti, le tabelle di lookup e i dataset di **261 specie** e
+**107 province** sono il porting fedele di `orebla_calc.js` e `orebla_dati.js`.
 
 ## Installazione
 
-1. Scarica l'archivio `QgisTreeBenefits.zip` (o crealo comprimendo la cartella `QgisTreeBenefits/`).
-2. In QGIS: **Plugin → Gestisci e installa plugin → Installa da ZIP**, seleziona l'archivio e installa.
-3. Dopo l'installazione trovi:
-   - gli algoritmi nella **Cassetta degli strumenti di Processing → QgisTreeBenefits → Stima benefici alberi**;
-   - la finestra a schede in **Plugin → QgisTreeBenefits → _Stima benefici (finestra a schede)…_**.
+1. In QGIS (≥ 3.44): *Plugin → Gestisci e installa plugin → Installa da ZIP*,
+   selezionare `QgisTreeBenefits.zip`.
+2. Tutte le funzioni compaiono nella **Cassetta degli strumenti di Processing**,
+   sotto **QgisTreeBenefits → Stima benefici alberi**:
 
-## Strumenti del plugin
+   - **Crea inventario alberi (layer vuoto a schede)**
+   - **Importa/adatta layer alberi esistente**
 
-Flusso consigliato: **crea o importa l'inventario → completa i parametri → esegui la stima benefici**.
+   Il disclaimer e la sezione informativa (metodo Orebla di Luigi Sani;
+   raffrescamento/runoff di ALIAS ATP) sono riportati nel pannello *Guida* di
+   ciascun algoritmo.
 
-### 1 · Crea inventario alberi (layer vuoto a schede)
+## 1) Crea inventario alberi (layer vuoto)
 
-Crea un layer di punti vuoto con **tutti i campi‑parametro** del modello. Il layer risultante ha:
+Crea un layer di punti vuoto con **tutti i campi-parametro**: etichette come nella
+webapp, **menu a tendina** per i campi categoriali e **modulo attributi a TAB**
+(Dati base / avanzati / climatici). Si sceglie il CRS (default: CRS di progetto).
+Dopo l'esecuzione, avviare l'editing e digitalizzare gli alberi compilando i campi
+dalle tendine, scheda per scheda.
 
-- i **menu a tendina** (ValueMap) per i campi categoriali (specie, provincia, fascia fitoclimatica, stadio, vitalità, posizione sociale, condizioni, dimora, organizzazione, vincoli, localizzazione, fattore di riduzione…);
-- il **modulo attributi organizzato in schede** (Dati base / Dati avanzati / Dati climatici);
-- le **etichette dei campi** pronte per la stima.
+## 2) Importa/adatta un layer alberi esistente
 
-Imposta il CRS (consigliato un **UTM** in metri se vuoi poi le aree di influenza), avvia l'editing e digitalizza gli alberi compilando i campi dalle tendine.
+Trasforma un layer-alberi dell'utente in uno compatibile col calcolatore (stessi
+nomi-parametro → pesi corretti):
 
-### 2 · Importa/adatta layer alberi esistente
+- si indicano il **campo specie** e i campi **biometrici** (codice, h, DBH,
+  circonferenza, diametro e inserzione chioma);
+- la **specie** viene abbinata automaticamente alla libreria scegliendo il nome
+  più simile; il **log** riporta ogni abbinamento con la percentuale di
+  somiglianza (voci sotto il 60% segnalate con "VERIFICARE");
+- il layer risultante è già **a TAB con le tendine**, con specie e biometria
+  precompilate; gli altri parametri si completano nel modulo a schede e le specie
+  dubbie si correggono dal campo specie a tendina.
 
-Trasforma un layer‑alberi già in tuo possesso in un layer compatibile con il calcolatore (stessi nomi‑parametro → pesi corretti):
+## 3) Stima benefici ambientali (finestra a schede)
 
-1. indica il **layer sorgente** e il **campo con la specie**;
-2. la **specie** viene abbinata automaticamente alla **libreria del plugin** scegliendo il nome più simile (nome scientifico/comune); il log riporta ogni abbinamento con la percentuale di somiglianza (le voci sotto il 60 % sono segnalate da verificare);
-3. **mappa i dati biometrici** (codice, altezza, DBH, circonferenza, diametro e inserzione chioma);
-4. ottieni un nuovo layer **già a schede e con le tendine**, con specie e biometria precompilate; gli altri parametri si completano con lo stesso schema, e le specie dubbie si correggono dal campo a tendina.
-
-### 3 · Stima benefici ambientali
-
-Calcola, per ogni punto‑albero, le stime dei benefici. È disponibile in due modi con lo **stesso motore di calcolo**:
-
-- **Finestra a schede** (menu Plugin → QgisTreeBenefits): più comoda per la compilazione, con schede **Dati base · Dati avanzati · Dati climatici · Opzioni & Output · ℹ Info · ❔ Guida**.
-- **Algoritmo Processing** (`3 · Stima benefici ambientali alberi (Orebla)`): adatto a batch e Modellatore grafico; i parametri avanzati e climatici sono raccolti sotto *Parametri avanzati*.
-
-Opzioni comuni: stima avanzata CO₂, simulazioni di mobilità, CRS di output (UTM) e generazione delle aree di influenza.
-
-## Parametri di input
-
-Per ogni parametro si indica il **campo del layer** che lo contiene; se i nomi coincidono con quelli dell'inventario, la mappatura è automatica. I parametri sono raggruppati in tre schede.
-
-**Dati base** — codice albero, specie, provincia, fascia fitoclimatica (A…E), altezza, DBH, circonferenza, diametro chioma, inserzione chioma, stadio fenologico, vitalità (1–7), posizione sociale.
-
-**Dati avanzati** — condizioni stazionali (1–7), trasparenza chioma, condizioni vegetative (1–13), integrità strutturale (1–5), tipo di dimora, organizzazione urbanistica, vincoli/tutele, localizzazione funzionale, fattore di riduzione (CO₂ avanzata), km percorsi al giorno (mobilità).
-
-**Dati climatici** — precipitazioni annue, n° eventi pioggia/anno, precipitazione evento, rain rate evento, T max media estiva, vento medio estivo, umidità relativa media, precipitazioni giu–ago, n° eventi giu–ago, radiazione globale giu–ago. *Ogni voce climatica può provenire da un campo oppure da una costante.*
-
-**Note:**
-
-- **Specie**: id o nome (anche parziale, es. `Tilia cordata`).
-- **Provincia**: sigla (`VI`) o nome (`Vicenza`); necessaria per il valore ornamentale.
-- **Latitudine**: se non fornita, viene ricavata dalla geometria del punto.
-- I confronti sui vocabolari categoriali sono *case‑insensitive*.
-
-## Campi di output (`ob_`)
-
-Il layer dei risultati conserva i campi originali e aggiunge i campi seguenti, con **etichette** e **modulo a schede** (Parametri albero · Riconoscimento · Valore & ecologia · Runoff · Raffrescamento · CO₂ avanzata & mobilità).
-
-| Campo | Significato |
-|---|---|
-| `ob_spec` / `ob_prov` | specie / provincia riconosciute |
-| `ob_co2stoc` | CO₂ stoccata / biomassa (kg) |
-| `ob_co2seq` | CO₂ sequestrata (kg/anno) |
-| `ob_o2` | O₂ prodotto (kg/anno) |
-| `ob_inq` | inquinanti abbattuti (kg/anno) |
-| `ob_valeco` | valore ambientale (€) |
-| `ob_valorn` | valore ornamentale netto (€) |
-| `ob_qorn` | Q ornamentale base |
-| `ob_valgl` | valore globale (eco + orn) (€) |
-| `ob_runmc` / `ob_runeur` / `ob_runcls` | runoff annuo: m³ / € / classe |
-| `ob_runevmc` / `ob_runevcl` | runoff evento: m³ / classe |
-| `ob_raffdt` | raffrescamento ΔT medio (°C) |
-| `ob_kwh` / `ob_raffco2` / `ob_raffeur` | energia / CO₂ / € risparmiati (raffrescamento) |
-| `ob_area` / `ob_rinf` | area / raggio di influenza (m² / m) |
-| `ob_dtN` `ob_dtE` `ob_dtO` `ob_dtS` | ΔT per direzione (°C) |
-| `ob_co2avf` / `ob_valecav` / `ob_valglav` | CO₂ avanzata / valore eco avanzato / globale avanzato |
-| `ob_mauto` `ob_mbus` `ob_mnauto` `ob_mnbus` | mobilità: CO₂ auto/bus e alberi di compensazione |
-
-I campi non calcolabili (input mancanti) restano `NULL`.
+La stima benefici è una finestra a schede (menu Plugin → QgisTreeBenefits → "Stima benefici"), non un algoritmo batch. Schede: Dati base / avanzati / climatici / Opzioni & Output / Info / Guida. Si mappano i campi (auto se i nomi coincidono); i
+**dati climatici** possono arrivare dal layer **oppure** essere indicati come
+**costante** unica per tutti gli alberi. Opzioni: CO₂ avanzata, mobilità,
+generazione delle **aree di influenza** e **CRS di output (UTM)**.
 
 ## Output in UTM e aree di influenza
 
-L'output viene riproiettato nel **CRS UTM** scelto (in metri): così `ob_rinf` (raggio) e `ob_area` (m²) sono direttamente utilizzabili per i buffer. Spuntando l'apposita opzione, il plugin genera anche i **poligoni delle aree di influenza** (buffer pari al raggio di influenza di ogni albero).
+L'output viene riproiettato nel **CRS UTM** scelto (in metri): così il campo
+`ob_rinf` (raggio di influenza, m) e `ob_area` (m²) sono direttamente utilizzabili
+per generare buffer. Le **aree di influenza** possono essere prodotte
+automaticamente (buffer = raggio di influenza) sia dal dialogo a TAB sia
+dall'algoritmo Processing.
 
-## Dataset e metodologia
 
-- **Valore ornamentale ed ecologico** — metodo **Orebla** (autore: *Luigi Sani*), descritto nell'articolo pubblicato su [arborete.it](https://arborete.it/download.html). L'opzione di calcolo ecologico in modalità avanzata è introdotta da ALIAS ATP (contributo del settore branche, ridotto per un *fattore di riduzione*).
-- **Raffrescamento estivo e runoff evitato** — modelli di simulazione ambientale elaborati da **ALIAS ATP** ([aliasinfo.it](https://aliasinfo.it)).
-- **Libreria specie:** 261 specie arboree (LAI, CRC, IRU base specie/urbano compatto/urbano aperto, gruppo funzionale).
-- **Province italiane:** 107 province con fascia fitoclimatica Pavari e valori massimi Orebla (`valmax`) per il valore ornamentale.
+### Specie e provincia
 
-Il plugin riproduce i calcoli della **piattaforma ARBOREO di ALIAS ATP**.
+- **Specie**: il campo può contenere l'**id** numerico Orebla oppure il **nome**
+  (anche parziale, es. `Tilia cordata`). Se non riconosciuta si usano i valori di
+  default (gruppo `decidua_latifoglia`).
+- **Provincia**: **sigla** (`VI`) o **nome** (`Vicenza`). Necessaria per il valore
+  ornamentale; senza provincia gli altri benefici si calcolano comunque.
+- **Coerenza fitoclimatica**: classe `A`..`E`.
 
-## Dati di esempio
+## Nomi-campo convenzionali (default)
 
-Nella cartella `esempio/` è incluso `alberi_esempio.csv` (geometrie WKT, EPSG:4326). In QGIS: **Layer → Aggiungi layer → Testo delimitato**, geometria WKT sul campo `wkt`.
+Identificazione: `specie`, `provincia`, `fito`
+Biometria: `h`, `dbh`, `circonf`, `d_ch`, `inser_c`, `stadio`, `vital`,
+`p_soc`, `cond_staz`, `chioma_tr`
+Fitosanitario/contesto: `cast_p`, `strumenti`, `dimora`, `organizzazione`,
+`fus_p`, `localizzazione`
+Clima: `prec_annua`, `n_eventi_pioggia`, `prec_evento`, `rr_evento`,
+`tmax_media_estiva`, `vento_medio_estivo`, `umidita_rel_estiva`, `prec_giu_ago`,
+`n_eventi_giu_ago`, `rad_globale_giu_ago`, `latitudine`
+Opzionali: `km_eco`
 
-## Struttura del repository
+## Vocabolari categoriali (case-insensitive)
 
-```
-QgisTreeBenefits/
-├── __init__.py                 # entry point del plugin (classFactory)
-├── metadata.txt                # metadati del plugin
-├── orebla_plugin.py            # registra il provider + voce di menu
-├── provider.py                 # provider Processing (3 algoritmi)
-├── create_layer_algorithm.py   # 1 · crea inventario
-├── import_algorithm.py         # 2 · importa/adatta layer
-├── algorithm.py                # 3 · stima benefici (Processing)
-├── dialog.py                   # finestra a schede della stima benefici
-├── orebla_core.py              # motore di calcolo (porting del modello)
-├── orebla_data.py              # 261 specie + 107 province
-├── orebla_fields.py            # definizione campi, vocabolari, campi output
-├── orebla_layer.py             # creazione/configurazione layer (tendine + schede)
-├── orebla_about.py             # disclaimer, info e guida
-├── icon.png
-└── esempio/alberi_esempio.csv
-```
+- **stadio**: plantula · pianta giovane · albero giovane · albero adulto ·
+  albero adulto avanzato · albero senescente · albero veterano
+- **vital** (1..7): 1 = peggiore … 7 = migliore (7→0% riduzione; 1→albero
+  non vitale, niente sequestro)
+- **p_soc**: sottoposta · dominata · intermedia · codominante ·
+  dominante margine · dominante interna · predominante · libera (giovane) · isolata
+- **chioma_tr**: bassa · media · alta · scarsa
+- **organizzazione**: aree rurali · aree rurali urbaniz. · periferia recente ·
+  periferia antica · luoghi villeggiatura · centro città · centro storico ·
+  zone industriali
+- **fus_p** (vincolo): nessuno · tutela comunale · rilevanza comunale ·
+  paesaggistico · storico-architettonico · monumentale
+- **localizzazione**: alberata stradale · parcheggio · piazza · piazzola ·
+  plesso scolastico · impianto sportivo · giardino recente · parco recente ·
+  giardino storico · parco storico · bosco · cimitero · terreno agricolo
+- **dimora**: prato, scarpata, aiuola, tornello, alberata stradale, parcheggio,
+  filare arboreo, piazza, parco storico, … (vedi tabella DIMORA_P)
+- **cast_p** (1..13): condizioni vegetative · **strumenti** (1..5): integrità
+  strutturale · **cond_staz** (1..7): idoneità stazionale
 
-## Licenza e crediti
+## Campi di output (prefisso `ob_`)
 
-- **Sviluppo plugin:** ALIAS ATP — [aliasinfo.it](https://www.aliasinfo.it) · alias@aliasinfo.it
-- **Metodo Orebla (valore ornamentale ed ecologico):** Luigi Sani
-- **Raffrescamento estivo e runoff evitato:** ALIAS ATP
-- **Riferimento:** piattaforma ARBOREO di ALIAS ATP
+| Campo | Significato |
+|---|---|
+| ob_spec / ob_prov | specie / provincia riconosciute |
+| ob_co2stoc | CO₂ stoccata / biomassa (kg) |
+| ob_co2seq | CO₂ sequestrata (kg/anno) |
+| ob_o2 | O₂ prodotto (kg/anno) |
+| ob_inq | inquinanti abbattuti (kg/anno) |
+| ob_valeco | valore ambientale (€) |
+| ob_valorn | valore ornamentale netto (€) |
+| ob_qorn | Q ornamentale base |
+| ob_valgl | valore globale (eco+orn) (€) |
+| ob_runmc / ob_runeur / ob_runcls | runoff annuo m³ / € / classe |
+| ob_runevmc / ob_runevcl | runoff evento m³ / classe |
+| ob_raffdt | raffrescamento ΔT medio (°C) |
+| ob_kwh / ob_raffco2 / ob_raffeur | energia/CO₂/€ risparmiati (raffrescamento) |
+| ob_area / ob_rinf | area / raggio di influenza |
+| ob_dtN ob_dtE ob_dtO ob_dtS | ΔT per direzione (°C) |
+| ob_co2avf / ob_valecav / ob_valglav | CO₂ avanzata / valore eco avanzato / globale avanzato |
+| ob_mauto ob_mbus ob_mnauto ob_mnbus | mobilità: CO₂ auto/bus e alberi di compensazione |
 
-Strumento a scopo **dimostrativo e didattico**: i risultati non costituiscono perizia o valutazione tecnica ufficiale.
+I campi non calcolabili (input mancanti) restano NULL, come la webapp che non
+mostra il risultato quando i dati richiesti non sono presenti.
 
-© 2026 ALIAS ATP
+## Dataset di esempio
+
+`esempio/alberi_esempio.csv` (WKT, EPSG:4326). In QGIS: *Layer → Aggiungi layer
+testo delimitato*, geometria WKT, campo `wkt`.
+
+## Note
+
+- Il plugin funziona da Cassetta strumenti, da **Modellatore grafico** e in
+  **batch**, come ogni algoritmo Processing.
+- L'output può essere GeoPackage, Shapefile, memoria, ecc. Per Shapefile i nomi
+  `ob_*` sono già ≤ 10 caratteri.

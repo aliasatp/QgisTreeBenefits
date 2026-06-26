@@ -25,6 +25,7 @@ import difflib
 #  HELPERS NUMERICI  (mimano gv()/gs()/Math.round del JS)
 # ====================================================================
 
+
 def js_round(x):
     """Math.round JS: arrotondamento dell'intero piu' vicino, .5 verso +inf."""
     if x is None:
@@ -224,7 +225,6 @@ def calc_ornamentale(p, provincia):
     ram_p = pstr(p.get('fito')).upper() or 'C'
     circonf = pfloat(p.get('circonf'))
     d_ch_m = pfloat(p.get('d_ch'))
-    d_ch_cm = pfloat(p.get('d_ch_cm')) if pfloat(p.get('d_ch_cm')) > 0 else d_ch_m * 100
     h = pfloat(p.get('h'))
     stadio = pstr(p.get('stadio'))
     dimora = pstr(p.get('dimora'))
@@ -321,9 +321,8 @@ def calc_runoff_annuo(p, sp):
     c_contesto = min(1.2, max(0.6, iru_base / iru_sp)) if iru_sp else 1.0
 
     prec_m = prec / 1000.0
-    runoff = prec_m * area_chioma * min(1.0,
-             (c_interc * c_assorb * c_foglia * c_rall * c_ins *
-              c_stato * c_sat * c_contesto) * 0.25)
+    f = c_interc * c_assorb * c_foglia * c_rall * c_ins * c_stato * c_sat * c_contesto
+    runoff = prec_m * area_chioma * min(1.0, f * 0.25)
 
     classe = ('molto alto' if runoff >= 15 else 'alto' if runoff >= 8 else
               'medio' if runoff >= 4 else 'basso' if runoff >= 1.5 else 'molto basso')
@@ -375,9 +374,8 @@ def calc_runoff_evento(p, sp):
     c_contesto = min(1.2, max(0.6, iru_base / iru_sp)) if iru_sp else 1.0
 
     prec_m = prec_ev / 1000.0
-    runoff_ev = prec_m * area_chioma * min(1.0,
-                (c_interc * c_assorb * c_foglia * c_rall * c_ins *
-                 c_stato * c_contesto * c_int) * 0.25)
+    f = c_interc * c_assorb * c_foglia * c_rall * c_ins * c_stato * c_contesto * c_int
+    runoff_ev = prec_m * area_chioma * min(1.0, f * 0.25)
 
     pxa = prec_m * area_chioma
     classe_ev = ('evento severo' if pxa >= 1.5 else

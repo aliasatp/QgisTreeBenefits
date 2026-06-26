@@ -12,7 +12,7 @@ Schede: Dati base | Dati avanzati | Dati climatici | Opzioni & Output | Info & G
 from qgis.PyQt.QtWidgets import (
     QDialog, QVBoxLayout, QHBoxLayout, QFormLayout, QGridLayout, QTabWidget,
     QWidget, QCheckBox, QComboBox, QPushButton, QLabel, QDoubleSpinBox,
-    QGroupBox, QMessageBox, QScrollArea, QTextBrowser,
+    QMessageBox, QScrollArea, QTextBrowser,
 )
 from qgis.core import (
     QgsVectorLayer, QgsField, QgsFeature, QgsProject,

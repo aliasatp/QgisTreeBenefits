@@ -188,4 +188,3 @@ class OutputLayerPostProcessor(QgsProcessingLayerPostProcessorInterface):
             configure_output_layer(layer)
         except Exception:
             pass
-

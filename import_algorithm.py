@@ -17,7 +17,7 @@ from qgis.core import (
     QgsProcessingParameterFeatureSource, QgsProcessingParameterFeatureSink,
     QgsProcessingParameterField, QgsProcessingParameterCrs,
     QgsFields, QgsFeature, QgsGeometry, QgsWkbTypes,
-    QgsCoordinateReferenceSystem, QgsCoordinateTransform, QgsProject, NULL,
+    QgsCoordinateTransform, QgsProject, NULL,
 )
 
 from . import orebla_core as C
