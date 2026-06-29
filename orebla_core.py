@@ -89,7 +89,7 @@ SOC_ADJ = {'sottoposta': 0.20, 'dominata': 0.15, 'intermedia': 0.10,
            'libera (giovane)': 0.00, 'isolata': 0.00}
 
 RAM_PAR = {
-    'A': {'par3': 0.59, 'par2': 12, 'par4': 12,  'par5': 0.58},
+    'A': {'par3': 0.59, 'par2': 12, 'par4': 12, 'par5': 0.58},
     'B': {'par3': 0.66, 'par2': 15, 'par4': 9.5, 'par5': 0.65},
     'C': {'par3': 0.72, 'par2': 17, 'par4': 8.6, 'par5': 0.72},
     'D': {'par3': 0.77, 'par2': 19, 'par4': 8.3, 'par5': 0.79},
@@ -199,12 +199,8 @@ def calc_ecologico(p):
     o2 = js_round((b_su_fit * soc_rid) / 44.01 * 31.999 * 0.9) if fit_val != 35 else 0
     i_val = js_round(b_su_fit2 * soc_rid) if fit_val != 35 else 0
 
-    valore_eco = js_round(
-        bio * 0.55
-        + (b_su_fit * soc_rid)
-        + ((b_su_fit * soc_rid) / 44.01 * 31.999 * 0.9) * 5
-        + (b_su_fit2 * soc_rid) * 10
-    )
+    o2_term = ((b_su_fit * soc_rid) / 44.01 * 31.999 * 0.9) * 5
+    valore_eco = js_round(bio * 0.55 + (b_su_fit * soc_rid) + o2_term + (b_su_fit2 * soc_rid) * 10)
     return {'biologia': js_round(bio), 'co2': co2, 'o2': o2,
             'i': i_val, 'valore_eco': valore_eco}
 
@@ -425,8 +421,8 @@ def calc_raffrescamento(p, sp, latitudine=None):
     stress_ins = (0.10 if inser_c <= 2 else 0.25 if inser_c <= 5 else
                   0.45 if inser_c <= 8 else 0.65)
 
-    ist = max(0.1, 1 - (f_stress + stress_vital + stress_staz +
-                        stress_stadio + stress_chioma + stress_ins) / 6.0)
+    stress_sum = (f_stress + stress_vital + stress_staz + stress_stadio + stress_chioma + stress_ins)
+    ist = max(0.1, 1 - stress_sum / 6.0)
 
     f_vento = min(1.10, max(0.70, 1 - ((vento - 2.5) / 3.0) ** 2))
     if umid <= 45:
@@ -469,10 +465,16 @@ def calc_raffrescamento(p, sp, latitudine=None):
         dir_results[d] = {'dt': deltaT_dir, 'kwh': kwh,
                           'euro': kwh * 0.28, 'co2': kwh * 0.25}
 
-    avg_dt = (dir_results['nord']['dt'] + dir_results['est']['dt'] +
-              dir_results['ovest']['dt'] + dir_results['sud']['dt']) / 4.0
-    tot_kwh = (dir_results['nord']['kwh'] + dir_results['est']['kwh'] +
-               dir_results['ovest']['kwh'] + dir_results['sud']['kwh'])
+    dt_n = dir_results['nord']['dt']
+    dt_e = dir_results['est']['dt']
+    dt_o = dir_results['ovest']['dt']
+    dt_s = dir_results['sud']['dt']
+    avg_dt = (dt_n + dt_e + dt_o + dt_s) / 4.0
+    kwh_n = dir_results['nord']['kwh']
+    kwh_e = dir_results['est']['kwh']
+    kwh_o = dir_results['ovest']['kwh']
+    kwh_s = dir_results['sud']['kwh']
+    tot_kwh = kwh_n + kwh_e + kwh_o + kwh_s
     tot_euro = tot_kwh * 0.28
     tot_co2 = tot_kwh * 0.25
 
@@ -519,12 +521,8 @@ def calc_co2_avanzata(p, eco, rid_patologia=0.0):
     b_fit_av = bio_av / stadio_v
     b_fit2_av = bio_av * 0.2 / stadio_v
 
-    valore_eco_av_lordo = js_round(
-        bio_av * 0.55
-        + (b_fit_av * soc_rid)
-        + ((b_fit_av * soc_rid) / 44.01 * 31.999 * 0.9) * 5
-        + (b_fit2_av * soc_rid) * 10
-    )
+    o2_term_av = ((b_fit_av * soc_rid) / 44.01 * 31.999 * 0.9) * 5
+    valore_eco_av_lordo = js_round(bio_av * 0.55 + (b_fit_av * soc_rid) + o2_term_av + (b_fit2_av * soc_rid) * 10)
     valore_eco_avanzato = js_round(valore_eco_av_lordo * (1 - rid))
 
     return {'vol_cono': vol_cono, 'bio_branche': js_round(bio_branche),
@@ -543,8 +541,8 @@ def calc_sim_mobilita(p, eco, km_eco=None):
     km = pfloat(km_eco) if km_eco is not None else pfloat(p.get('km_eco'))
     if not km or km <= 0:
         return None
-    co2_auto = (180 * km * 0.11) / 2.0
-    co2_scuolabus = (180 * km * 0.20) / 20.0
+    co2_auto = (255 * km * 0.11) / 2.0
+    co2_scuolabus = (210 * km * 0.20) / 20.0
     co2_albero = eco['co2'] if eco else 0
     altezza = pfloat(p.get('h'))
     neutro_auto = (co2_auto / co2_albero) if co2_albero > 0 else None
@@ -678,8 +676,9 @@ def compute_all(p, sp, provincia, latitudine=None,
     co2av = calc_co2_avanzata(p, eco, rid_patologia) if (do_co2_avanzata and eco) else None
     mob = calc_sim_mobilita(p, eco, km_eco) if (do_mobilita and eco) else None
 
-    val_globale = ((eco['valore_eco'] if eco else 0) +
-                   (orn['val_def'] if orn else 0))
+    vg_eco = eco['valore_eco'] if eco else 0
+    vg_orn = orn['val_def'] if orn else 0
+    val_globale = vg_eco + vg_orn
     val_globale_av = None
     if co2av:
         val_globale_av = co2av['valore_eco_avanzato'] + (orn['val_def'] if orn else 0)

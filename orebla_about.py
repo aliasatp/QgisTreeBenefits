@@ -105,8 +105,7 @@ VERSION_HTML = """
 
 
 def _wrap(*parts):
-    return ("<div style='font-family:sans-serif;font-size:12px;'>"
-            + ''.join(parts) + "</div>")
+    return ("<div style='font-family:sans-serif;font-size:12px;'>" + ''.join(parts) + "</div>")
 
 
 def about_info_html():

@@ -67,8 +67,7 @@ class OreblaImportAlgorithm(QgsProcessingAlgorithm):
             "\u2022 I dati biometrici indicati vengono copiati.\n"
             "\u2022 Gli altri parametri (stadio, vitalita, posizione, condizioni, "
             "clima\u2026) si completano nel layer risultante, gia' a schede e con i "
-            "menu a tendina; le specie dubbie si correggono dal campo a tendina.\n\n"
-            + ABOUT.about_html())
+            "menu a tendina; le specie dubbie si correggono dal campo a tendina.\n\n" + ABOUT.about_html())
 
     def initAlgorithm(self, config=None):
         self.addParameter(QgsProcessingParameterFeatureSource(
