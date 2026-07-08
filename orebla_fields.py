@@ -151,7 +151,7 @@ INPUT_FIELDS = [
          tab='base', widget='num', options=None),
     dict(key='inser_c', qtype=QVariant.Double, label='Inserzione chioma (m)',
          tab='base', widget='num', options=None),
-    dict(key='stadio', qtype=QVariant.String, label='Stadio fenologico',
+    dict(key='stadio', qtype=QVariant.String, label='Stadio',
          tab='base', widget='map', options=STADIO_OPTS),
     dict(key='vital', qtype=QVariant.Int, label='Vitalit\u00e0 (1\u20137)',
          tab='base', widget='map', options=VITAL_OPTS),
