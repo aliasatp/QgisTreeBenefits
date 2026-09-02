@@ -2875,7 +2875,33 @@ SPECIE_DATA = [
     }
 ]
 
+# --------------------------------------------------------------------
+# Voce generica per uso EXTRA-ITALIA / generic entry for NON-ITALIAN use
+# --------------------------------------------------------------------
+# IT: "valmax" e' la media aritmetica dei valori massimi Orebla delle 107
+#     province italiane (112399.79 EUR). Serve a chi lavora fuori dall'Italia e
+#     non dispone di un valore massimo di riferimento locale: il valore
+#     ornamentale viene cosi' calcolato su una base italiana media, con la stessa
+#     curva logistica RAM. E' una approssimazione: dove esista un riferimento
+#     nazionale/locale, e' preferibile inserirlo al posto di questo.
+# EN: "valmax" is the arithmetic mean of the Orebla maximum values of the 107
+#     Italian provinces (EUR 112,399.79). It is meant for users working outside
+#     Italy who have no local reference maximum: the amenity value is then
+#     computed on an average Italian basis using the same RAM logistic curve.
+#     It is an approximation - where a national/local reference exists, use it.
+PROVINCE_EXTRA_SIGLA = "ZZ"
+PROVINCE_EXTRA_ALIASES = ("ZZ", "XX", "INT", "INTL", "EXTRA", "EXTRA-ITALIA",
+                          "EXTRA ITALIA", "EXTRAITALIA", "NON-ITALY", "NON ITALY",
+                          "OUTSIDE ITALY", "AVERAGE", "MEDIA", "MEDIA ITALIA")
+
 PROVINCE_DATA = [
+    {
+        "prov": "Media Italia (uso extra-Italia)",
+        "prov_en": "Italy average (non-Italian use)",
+        "sigla": "ZZ",
+        "cat": 5,
+        "valmax": 112399.79
+    },
     {
         "prov": "Agrigento",
         "sigla": "AG",

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Orebla Tree Benefits - plugin Processing per QGIS."""
+"""Orebla Tree Benefits - plugin Processing per QGIS (IT/EN)."""
 
 
 def classFactory(iface):

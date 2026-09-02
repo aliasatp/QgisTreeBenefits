@@ -2,6 +2,8 @@
 """
 Algoritmo Processing: importa/adatta un layer alberi esistente verso il formato
 del calcolatore Orebla.
+Processing algorithm: import/adapt an existing tree layer into the Orebla
+calculator format.
 
 - abbina automaticamente la specie sorgente alla libreria (nome piu' simile);
 - mappa i dati biometrici indicati;
@@ -16,6 +18,7 @@ from qgis.core import (
     QgsProcessing, QgsProcessingAlgorithm, QgsProcessingException,
     QgsProcessingParameterFeatureSource, QgsProcessingParameterFeatureSink,
     QgsProcessingParameterField, QgsProcessingParameterCrs,
+    QgsProcessingParameterEnum,
     QgsFields, QgsFeature, QgsGeometry, QgsWkbTypes,
     QgsCoordinateTransform, QgsProject, NULL,
 )
@@ -24,6 +27,7 @@ from . import orebla_core as C
 from .orebla_data import SPECIE_DATA
 from . import orebla_layer as OL
 from . import orebla_about as ABOUT
+from . import orebla_i18n as I18N
 
 
 class OreblaImportAlgorithm(QgsProcessingAlgorithm):
@@ -37,7 +41,10 @@ class OreblaImportAlgorithm(QgsProcessingAlgorithm):
     F_DCH = 'F_DCH'
     F_INSERC = 'F_INSERC'
     OUTPUT_CRS = 'OUTPUT_CRS'
+    LANG = 'LANG'
     OUTPUT = 'OUTPUT'
+
+    LANG_CODES = [None, 'it', 'en']
 
     NUM_BIOM = {'h': F_H, 'dbh': F_DBH, 'circonf': F_CIRCONF,
                 'd_ch': F_DCH, 'inser_c': F_INSERC}
@@ -49,32 +56,26 @@ class OreblaImportAlgorithm(QgsProcessingAlgorithm):
         return 'importa_alberi'
 
     def displayName(self):
-        return '2 \u00b7 Importa/adatta layer alberi esistente'
+        return I18N.tr('alg2.name')
 
     def group(self):
-        return 'Stima benefici alberi'
+        return I18N.tr('group.name')
 
     def groupId(self):
         return 'orebla'
 
     def shortHelpString(self):
-        return (
-            "Trasforma un layer-alberi dell'utente in un layer compatibile con il "
-            "calcolatore (stessi nomi-parametro \u2192 pesi corretti).\n\n"
-            "\u2022 La specie viene abbinata automaticamente alla libreria del plugin "
-            "scegliendo il nome piu' simile (nome scientifico/comune); il log riporta "
-            "ogni abbinamento con la percentuale di somiglianza.\n"
-            "\u2022 I dati biometrici indicati vengono copiati.\n"
-            "\u2022 Gli altri parametri (stadio, vitalita, posizione, condizioni, "
-            "clima\u2026) si completano nel layer risultante, gia' a schede e con i "
-            "menu a tendina; le specie dubbie si correggono dal campo a tendina.\n\n" + ABOUT.about_html())
+        return I18N.tr('alg2.help') + ABOUT.about_html()
+
+    def _lang_options(self):
+        return [I18N.tr('lang.auto')] + [nm for _c, nm in I18N.LANGS]
 
     def initAlgorithm(self, config=None):
         self.addParameter(QgsProcessingParameterFeatureSource(
-            self.INPUT, 'Layer alberi sorgente', [QgsProcessing.TypeVectorPoint]))
+            self.INPUT, I18N.tr('alg2.p.in'), [QgsProcessing.TypeVectorPoint]))
 
         self.addParameter(QgsProcessingParameterField(
-            self.F_SPECIE, 'Campo con la specie',
+            self.F_SPECIE, I18N.tr('alg2.p.specie'),
             parentLayerParameterName=self.INPUT, optional=True))
 
         def fld(key, label, num=False):
@@ -84,22 +85,28 @@ class OreblaImportAlgorithm(QgsProcessingAlgorithm):
                 p.setDataType(QgsProcessingParameterField.Numeric)
             self.addParameter(p)
 
-        fld(self.F_COD, 'Campo codice albero (identificativo)')
-        fld(self.F_H, 'Campo altezza h (m)', num=True)
-        fld(self.F_DBH, 'Campo DBH (cm)', num=True)
-        fld(self.F_CIRCONF, 'Campo circonferenza (cm)', num=True)
-        fld(self.F_DCH, 'Campo diametro chioma (m)', num=True)
-        fld(self.F_INSERC, 'Campo inserzione chioma (m)', num=True)
+        fld(self.F_COD, I18N.tr('alg2.p.cod'))
+        fld(self.F_H, I18N.tr('alg2.p.h'), num=True)
+        fld(self.F_DBH, I18N.tr('alg2.p.dbh'), num=True)
+        fld(self.F_CIRCONF, I18N.tr('alg2.p.circ'), num=True)
+        fld(self.F_DCH, I18N.tr('alg2.p.dch'), num=True)
+        fld(self.F_INSERC, I18N.tr('alg2.p.insc'), num=True)
 
         self.addParameter(QgsProcessingParameterCrs(
-            self.OUTPUT_CRS, 'CRS di output', defaultValue='ProjectCrs'))
+            self.OUTPUT_CRS, I18N.tr('alg2.p.crs'), defaultValue='ProjectCrs'))
+        self.addParameter(QgsProcessingParameterEnum(
+            self.LANG, I18N.tr('alg1.p.lang'), options=self._lang_options(),
+            defaultValue=0))
         self.addParameter(QgsProcessingParameterFeatureSink(
-            self.OUTPUT, 'Alberi Orebla (importato)', QgsProcessing.TypeVectorPoint))
+            self.OUTPUT, I18N.tr('alg2.p.out'), QgsProcessing.TypeVectorPoint))
 
     def processAlgorithm(self, parameters, context, feedback):
         source = self.parameterAsSource(parameters, self.INPUT, context)
+        li = self.parameterAsEnum(parameters, self.LANG, context)
+        lang = I18N.lang_or_current(self.LANG_CODES[li] if 0 <= li < 3 else None)
+
         if source is None:
-            raise QgsProcessingException('Layer sorgente non valido.')
+            raise QgsProcessingException(I18N.tr('alg2.err', lang))
 
         def fname(key):
             v = self.parameterAsString(parameters, key, context)
@@ -124,7 +131,7 @@ class OreblaImportAlgorithm(QgsProcessingAlgorithm):
         (sink, dest_id) = self.parameterAsSink(
             parameters, self.OUTPUT, context, fields, QgsWkbTypes.Point, out_crs)
         if sink is None:
-            raise QgsProcessingException('Impossibile creare il layer di output.')
+            raise QgsProcessingException(I18N.tr('alg1.err', lang))
 
         tr = None
         if src_crs.isValid() and out_crs.isValid() and src_crs != out_crs:
@@ -185,20 +192,19 @@ class OreblaImportAlgorithm(QgsProcessingAlgorithm):
             if step:
                 feedback.setProgress(int(current * step))
 
-        # Log abbinamento specie
+        # Log abbinamento specie / species matching log
         if match_cache:
-            feedback.pushInfo('--- Abbinamento specie (sorgente -> libreria | somiglianza) ---')
+            feedback.pushInfo(I18N.tr('alg2.log.head', lang))
             for srcval in sorted(match_cache.keys(), key=lambda x: x.lower()):
                 lib, score = match_cache[srcval]
-                flag = '  <-- VERIFICARE' if score < 0.6 else ''
+                flag = I18N.tr('alg2.log.check', lang) if score < 0.6 else ''
                 feedback.pushInfo('%s -> %s | %d%%%s'
                                   % (srcval, lib, int(round(score * 100)), flag))
-            feedback.pushInfo('Alberi con specie abbinata: %d' % n_sp)
+            feedback.pushInfo(I18N.tr('alg2.log.count', lang) % n_sp)
 
         if context.willLoadLayerOnCompletion(dest_id):
             context.layerToLoadOnCompletionDetails(dest_id).setPostProcessor(
-                OL.TreeLayerPostProcessor.create())
+                OL.TreeLayerPostProcessor.create(lang))
 
-        feedback.pushInfo('Completa gli altri parametri nelle schede del modulo '
-                          'attributi (menu a tendina).')
+        feedback.pushInfo(I18N.tr('alg2.done', lang))
         return {self.OUTPUT: dest_id}

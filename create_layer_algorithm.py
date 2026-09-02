@@ -1,20 +1,28 @@
 # -*- coding: utf-8 -*-
-"""Algoritmo Processing: crea un inventario alberi vuoto (layer a schede + tendine)."""
+"""Algoritmo Processing: crea un inventario alberi vuoto (layer a schede + tendine).
+Processing algorithm: create an empty tree inventory (tabbed layer + drop-downs).
+"""
 
 from qgis.core import (
     QgsProcessing, QgsProcessingAlgorithm, QgsProcessingException,
     QgsProcessingParameterCrs, QgsProcessingParameterFeatureSink,
+    QgsProcessingParameterEnum,
     QgsFields, QgsWkbTypes,
 )
 
 from . import orebla_layer as OL
 from . import orebla_about as ABOUT
+from . import orebla_i18n as I18N
 
 
 class OreblaCreateLayerAlgorithm(QgsProcessingAlgorithm):
 
     CRS = 'CRS'
+    LANG = 'LANG'
     OUTPUT = 'OUTPUT'
+
+    # 0 = come impostazione del plugin, 1 = italiano, 2 = inglese
+    LANG_CODES = [None, 'it', 'en']
 
     def createInstance(self):
         return OreblaCreateLayerAlgorithm()
@@ -23,33 +31,34 @@ class OreblaCreateLayerAlgorithm(QgsProcessingAlgorithm):
         return 'crea_inventario'
 
     def displayName(self):
-        return '1 \u00b7 Crea inventario alberi (layer vuoto a schede)'
+        return I18N.tr('alg1.name')
 
     def group(self):
-        return 'Stima benefici alberi'
+        return I18N.tr('group.name')
 
     def groupId(self):
         return 'orebla'
 
     def shortHelpString(self):
-        return (
-            "Crea un layer di punti vuoto con tutti i campi-parametro come richiesti "
-            "dal plugin. Il layer risultante ha:\n"
-            "\u2022 etichette dei campi gi\u00e0 adeguati per fornirli alla funzione di stima;\n"
-            "\u2022 menu a tendina (ValueMap) per i campi categoriali;\n"
-            "\u2022 modulo attributi organizzato in TAB (Dati base / avanzati / climatici).\n\n"
-            "Imposta il CRS desiderato, poi digitalizza gli alberi compilando i campi "
-            "dai menu a tendina. Per usare le aree di influenza in seguito conviene un "
-            "CRS UTM (in metri).\n\n" + ABOUT.about_html())
+        return I18N.tr('alg1.help') + ABOUT.about_html()
+
+    def _lang_options(self):
+        lbl = I18N.tr('lang.auto')
+        return [lbl] + [nm for _c, nm in I18N.LANGS]
 
     def initAlgorithm(self, config=None):
         self.addParameter(QgsProcessingParameterCrs(
-            self.CRS, 'CRS del layer alberi', defaultValue='ProjectCrs'))
+            self.CRS, I18N.tr('alg1.p.crs'), defaultValue='ProjectCrs'))
+        self.addParameter(QgsProcessingParameterEnum(
+            self.LANG, I18N.tr('alg1.p.lang'), options=self._lang_options(),
+            defaultValue=0))
         self.addParameter(QgsProcessingParameterFeatureSink(
-            self.OUTPUT, 'Inventario alberi', QgsProcessing.TypeVectorPoint))
+            self.OUTPUT, I18N.tr('alg1.p.out'), QgsProcessing.TypeVectorPoint))
 
     def processAlgorithm(self, parameters, context, feedback):
         crs = self.parameterAsCrs(parameters, self.CRS, context)
+        li = self.parameterAsEnum(parameters, self.LANG, context)
+        lang = I18N.lang_or_current(self.LANG_CODES[li] if 0 <= li < 3 else None)
 
         fields = QgsFields()
         for f in OL.tree_field_defs():
@@ -58,14 +67,13 @@ class OreblaCreateLayerAlgorithm(QgsProcessingAlgorithm):
         (sink, dest_id) = self.parameterAsSink(
             parameters, self.OUTPUT, context, fields, QgsWkbTypes.Point, crs)
         if sink is None:
-            raise QgsProcessingException('Impossibile creare il layer di output.')
+            raise QgsProcessingException(I18N.tr('alg1.err', lang))
 
         # nessuna feature: layer vuoto pronto per la digitalizzazione
 
         if context.willLoadLayerOnCompletion(dest_id):
             context.layerToLoadOnCompletionDetails(dest_id).setPostProcessor(
-                OL.TreeLayerPostProcessor.create())
+                OL.TreeLayerPostProcessor.create(lang))
 
-        feedback.pushInfo('Inventario vuoto creato. Compila gli alberi dai menu a '
-                          'tendina, nelle schede del modulo attributi.')
+        feedback.pushInfo(I18N.tr('alg1.done', lang))
         return {self.OUTPUT: dest_id}

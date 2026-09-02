@@ -572,6 +572,10 @@ def build_indexes(specie_data, province_data):
     for pr in province_data:
         pr_by_sigla[pr['sigla'].strip().upper()] = pr
         pr_by_name[pr['prov'].strip().lower()] = pr
+        # nomi tradotti (solo la voce generica extra-Italia ne ha)
+        for k, v in pr.items():
+            if k.startswith('prov_') and v:
+                pr_by_name[str(v).strip().lower()] = pr
     return sp_by_id, sp_by_name, pr_by_sigla, pr_by_name
 
 
@@ -595,7 +599,12 @@ def find_specie(value, sp_by_id, sp_by_name):
 
 
 def find_provincia(value, pr_by_sigla, pr_by_name):
-    """Trova la provincia per sigla (es. 'VI') o per nome (es. 'Vicenza')."""
+    """Trova la provincia per sigla (es. 'VI') o per nome (es. 'Vicenza').
+
+    Riconosce anche gli alias della voce generica extra-Italia (ZZ, INT,
+    'extra-Italia', 'Italy average', ...).
+    Also matches the aliases of the generic non-Italian entry.
+    """
     if value is None:
         return None
     key = str(value).strip()
@@ -605,7 +614,29 @@ def find_provincia(value, pr_by_sigla, pr_by_name):
         return pr_by_sigla[key.upper()]
     if key.lower() in pr_by_name:
         return pr_by_name[key.lower()]
+    # alias della voce generica extra-Italia
+    try:
+        from .orebla_data import PROVINCE_EXTRA_SIGLA, PROVINCE_EXTRA_ALIASES
+        if key.upper() in PROVINCE_EXTRA_ALIASES:
+            return pr_by_sigla.get(PROVINCE_EXTRA_SIGLA)
+    except Exception:
+        pass
     return None
+
+
+def provincia_label(pr, lang='it'):
+    """Nome della provincia nella lingua richiesta.
+
+    I nomi propri delle province italiane non si traducono: solo la voce
+    generica extra-Italia porta un 'prov_en'.
+    Italian province names are proper nouns and stay as they are; only the
+    generic non-Italian entry carries a 'prov_en' key.
+    """
+    if not pr:
+        return None
+    if lang and lang != 'it':
+        return pr.get('prov_' + lang) or pr.get('prov')
+    return pr.get('prov')
 
 
 def _norm_txt(s):

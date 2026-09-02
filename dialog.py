@@ -1,12 +1,17 @@
 # -*- coding: utf-8 -*-
 """
 dialog.py - Finestra a schede (TAB) per la Stima dei benefici ambientali.
+dialog.py - Tabbed window for the environmental benefit assessment.
 
 Compatibile con QGIS 4 / Qt6 (enum "scoped"): evita QDialogButtonBox e protegge
 gli enum potenzialmente rinominati. Calcola tramite orebla_core e produce layer
 di output (punti + opzionali poligoni aree di influenza), riproiettati in UTM.
 
-Schede: Dati base | Dati avanzati | Dati climatici | Opzioni & Output | Info & Guida
+Schede: Dati base | Dati avanzati | Dati climatici | Opzioni & Output | Info | Guida
+Tabs:   Basic data | Advanced data | Climate data | Options & Output | Info | Help
+
+La lingua dell'interfaccia si sceglie dal selettore in alto: la finestra si
+ricostruisce mantenendo il layer e le scelte gia' fatte.
 """
 
 from qgis.PyQt.QtWidgets import (
@@ -28,10 +33,10 @@ from .orebla_data import SPECIE_DATA, PROVINCE_DATA
 from . import orebla_fields as F
 from . import orebla_about as ABOUT
 from . import orebla_layer as OL
+from . import orebla_i18n as I18N
 
 
-TAB_LABELS = [('base', 'Dati base'), ('avanzati', 'Dati avanzati'),
-              ('clima', 'Dati climatici')]
+TAB_KEYS = ['base', 'avanzati', 'clima']
 
 
 def _set_point_filter(combo):
@@ -54,6 +59,8 @@ def _set_point_filter(combo):
 
 
 def _auto_utm_crs(layer=None):
+    """Fuso UTM/WGS84 suggerito. Con un layer si ricava dal suo baricentro
+    (qualsiasi fuso, entrambi gli emisferi); senza layer si usa un fallback."""
     lon, lat = 11.0, 45.0
     try:
         if layer is not None and layer.featureCount() > 0:
@@ -77,8 +84,7 @@ class OreblaCalcDialog(QDialog):
     def __init__(self, iface, parent=None):
         super().__init__(parent or iface.mainWindow())
         self.iface = iface
-        self.setWindowTitle('QgisTreeBenefits \u2013 Stima benefici ambientali')
-        self.setMinimumSize(640, 660)
+        self.lang = I18N.current_language()
 
         self.field_combos = {}
         self.fixed_widgets = {}
@@ -86,44 +92,78 @@ class OreblaCalcDialog(QDialog):
         (self._sp_id, self._sp_name,
          self._pr_sig, self._pr_name) = C.build_indexes(SPECIE_DATA, PROVINCE_DATA)
 
+        self._root = QVBoxLayout(self)
         self._build_ui()
         self._on_layer_changed()
 
     # ----------------------------------------------------------------
-    def _build_ui(self):
-        root = QVBoxLayout(self)
+    def T(self, key):
+        return I18N.tr(key, self.lang)
 
+    # ----------------------------------------------------------------
+    def _clear_layout(self, layout):
+        while layout.count():
+            item = layout.takeAt(0)
+            w = item.widget()
+            if w is not None:
+                w.setParent(None)
+            else:
+                sub = item.layout()
+                if sub is not None:
+                    self._clear_layout(sub)
+
+    # ----------------------------------------------------------------
+    def _build_ui(self):
+        self.setWindowTitle(self.T('plugin.title'))
+        self.setMinimumSize(680, 680)
+
+        root = self._root
+
+        # --- riga superiore: layer + lingua ---
         top = QHBoxLayout()
-        top.addWidget(QLabel('Layer di punti-albero:'))
+        top.addWidget(QLabel(self.T('dlg.layer')))
         self.layer_combo = QgsMapLayerComboBox()
         _set_point_filter(self.layer_combo)
         self.layer_combo.layerChanged.connect(self._on_layer_changed)
         top.addWidget(self.layer_combo, 1)
+
+        top.addSpacing(12)
+        top.addWidget(QLabel(self.T('lang.label')))
+        self.lang_combo = QComboBox()
+        for code, name in I18N.LANGS:
+            self.lang_combo.addItem(name, code)
+        idx = self.lang_combo.findData(self.lang)
+        self.lang_combo.setCurrentIndex(max(0, idx))
+        self.lang_combo.currentIndexChanged.connect(self._on_lang_changed)
+        top.addWidget(self.lang_combo)
         root.addLayout(top)
 
+        # --- schede dei parametri ---
         self.tabs = QTabWidget()
+        self.field_combos = {}
+        self.fixed_widgets = {}
 
-        by_tab = {t: [] for t, _ in TAB_LABELS}
+        by_tab = {t: [] for t in TAB_KEYS}
         for f in F.INPUT_FIELDS:
             by_tab[f['tab']].append(f)
 
-        for tab_key, tab_title in TAB_LABELS:
+        for tab_key in TAB_KEYS:
             page = QWidget()
             grid = QGridLayout(page)
             grid.setColumnStretch(1, 1)
             row = 0
             if tab_key == 'clima':
-                grid.addWidget(QLabel('<b>Campo</b>'), row, 1)
-                grid.addWidget(QLabel('<b>Valore fisso</b>'), row, 2, 1, 2)
+                grid.addWidget(QLabel(self.T('dlg.col.field')), row, 1)
+                grid.addWidget(QLabel(self.T('dlg.col.fixed')), row, 2, 1, 2)
                 row += 1
             for f in by_tab[tab_key]:
-                grid.addWidget(QLabel(f['label']), row, 0)
+                grid.addWidget(QLabel(F.field_label(f['key'], self.lang)), row, 0)
                 combo = QgsFieldComboBox()
                 combo.setAllowEmptyFieldName(True)
                 self.field_combos[f['key']] = combo
                 grid.addWidget(combo, row, 1)
                 if tab_key == 'clima' and f['widget'] == 'num':
-                    chk = QCheckBox('fisso')
+                    chk = QCheckBox(self.T('dlg.fixed'))
                     spin = QDoubleSpinBox()
                     spin.setRange(-1000000.0, 1000000.0)
                     spin.setDecimals(3)
@@ -137,31 +177,31 @@ class OreblaCalcDialog(QDialog):
             scroll = QScrollArea()
             scroll.setWidgetResizable(True)
             scroll.setWidget(page)
-            self.tabs.addTab(scroll, tab_title)
+            self.tabs.addTab(scroll, self.T('tab.' + tab_key))
 
         # --- scheda Opzioni & Output ---
-        self.tabs.addTab(self._build_options_tab(), 'Opzioni & Output')
+        self.tabs.addTab(self._build_options_tab(), self.T('tab.options'))
 
         # --- scheda Info ---
         info = QTextBrowser()
         info.setOpenExternalLinks(True)
-        info.setHtml(ABOUT.about_info_html())
-        self.tabs.addTab(info, '\u2139 Info')
+        info.setHtml(ABOUT.about_info_html(self.lang))
+        self.tabs.addTab(info, self.T('tab.info'))
 
         # --- scheda Guida (help) ---
         guide = QTextBrowser()
         guide.setOpenExternalLinks(True)
-        guide.setHtml(ABOUT.about_help_html())
-        self.tabs.addTab(guide, '\u2753 Guida')
+        guide.setHtml(ABOUT.about_help_html(self.lang))
+        self.tabs.addTab(guide, self.T('tab.help'))
 
         root.addWidget(self.tabs, 1)
 
         # --- pulsanti (senza QDialogButtonBox, per compatibilita' Qt6) ---
         btns = QHBoxLayout()
         btns.addStretch(1)
-        self.btn_run = QPushButton('Esegui calcolo')
+        self.btn_run = QPushButton(self.T('dlg.btn.run'))
         self.btn_run.clicked.connect(self._run)
-        self.btn_close = QPushButton('Chiudi')
+        self.btn_close = QPushButton(self.T('dlg.btn.close'))
         self.btn_close.clicked.connect(self.reject)
         btns.addWidget(self.btn_run)
         btns.addWidget(self.btn_close)
@@ -172,41 +212,91 @@ class OreblaCalcDialog(QDialog):
         page = QWidget()
         form = QFormLayout(page)
 
-        self.chk_co2av = QCheckBox('Calcola stima avanzata CO\u2082 (branche/rami)')
+        self.chk_co2av = QCheckBox(self.T('dlg.opt.co2av'))
         self.cmb_pat = QComboBox()
-        self.cmb_pat.addItems(F.PATOLOGIA_LBL)
+        self.cmb_pat.addItems(F.patologia_labels(self.lang))
         roww = QWidget()
         h = QHBoxLayout(roww)
         h.setContentsMargins(0, 0, 0, 0)
         h.addWidget(self.chk_co2av)
-        h.addWidget(QLabel('Fattore di riduzione (predefinito):'))
+        h.addWidget(QLabel(self.T('dlg.opt.rid')))
         h.addWidget(self.cmb_pat, 1)
         form.addRow(roww)
-        note_rid = QLabel('Il fattore di riduzione pu\u00f2 anche essere prelevato da un '
-                          'campo del layer (scheda Dati avanzati \u2192 "Fattore di '
-                          'riduzione"); se mappato, ha la priorit\u00e0 su questo predefinito.')
+        note_rid = QLabel(self.T('dlg.opt.rid.note'))
         note_rid.setWordWrap(True)
         note_rid.setStyleSheet('color:#666;font-size:11px;')
         form.addRow(note_rid)
 
-        self.chk_mob = QCheckBox('Calcola simulazioni di mobilit\u00e0 (campo "Km percorsi")')
+        self.chk_mob = QCheckBox(self.T('dlg.opt.mob'))
         form.addRow(self.chk_mob)
 
-        self.chk_buffer = QCheckBox('Genera i poligoni delle aree di influenza '
-                                    '(buffer = raggio di influenza)')
+        self.chk_buffer = QCheckBox(self.T('dlg.opt.buffer'))
         form.addRow(self.chk_buffer)
 
         self.crs_widget = QgsProjectionSelectionWidget()
         self.crs_widget.setCrs(_auto_utm_crs())
-        form.addRow('CRS di output (UTM):', self.crs_widget)
+        form.addRow(self.T('dlg.opt.crs'), self.crs_widget)
 
-        hint = QLabel('Suggerimento: per tutta una citt\u00e0 i dati climatici sono spesso '
-                      'uguali; usa i "valori fissi" nella scheda Dati climatici invece di '
-                      'un campo del layer.')
+        hint = QLabel(self.T('dlg.opt.hint'))
         hint.setWordWrap(True)
         hint.setStyleSheet('color:#666;font-size:11px;')
         form.addRow(hint)
         return page
+
+    # ----------------------------------------------------------------
+    def _snapshot(self):
+        """Salva le scelte correnti, per ricostruire la finestra in altra lingua."""
+        state = {
+            'layer': self.layer_combo.currentLayer(),
+            'fields': {k: c.currentField() for k, c in self.field_combos.items()},
+            'fixed': {k: (chk.isChecked(), spin.value())
+                      for k, (chk, spin) in self.fixed_widgets.items()},
+            'co2av': self.chk_co2av.isChecked(),
+            'pat': self.cmb_pat.currentIndex(),
+            'mob': self.chk_mob.isChecked(),
+            'buffer': self.chk_buffer.isChecked(),
+            'crs': self.crs_widget.crs(),
+            'tab': self.tabs.currentIndex(),
+        }
+        return state
+
+    def _restore(self, state):
+        if state.get('layer') is not None:
+            self.layer_combo.setLayer(state['layer'])
+        self._on_layer_changed()
+        for k, fn in state.get('fields', {}).items():
+            combo = self.field_combos.get(k)
+            if combo is not None and fn:
+                combo.setField(fn)
+        for k, (checked, val) in state.get('fixed', {}).items():
+            w = self.fixed_widgets.get(k)
+            if w:
+                w[0].setChecked(bool(checked))
+                w[1].setValue(float(val))
+        self.chk_co2av.setChecked(bool(state.get('co2av')))
+        self.cmb_pat.setCurrentIndex(int(state.get('pat') or 0))
+        self.chk_mob.setChecked(bool(state.get('mob')))
+        self.chk_buffer.setChecked(bool(state.get('buffer')))
+        crs = state.get('crs')
+        if crs is not None and crs.isValid():
+            self.crs_widget.setCrs(crs)
+        try:
+            self.tabs.setCurrentIndex(int(state.get('tab') or 0))
+        except Exception:
+            pass
+
+    # ----------------------------------------------------------------
+    def _on_lang_changed(self, *args):
+        code = self.lang_combo.currentData()
+        if not code or code == self.lang:
+            return
+        state = self._snapshot()
+        self.lang = code
+        I18N.set_language(code)
+        _refresh_provider()
+        self._clear_layout(self._root)
+        self._build_ui()
+        self._restore(state)
 
     # ----------------------------------------------------------------
     def _on_layer_changed(self, *args):
@@ -244,12 +334,13 @@ class OreblaCalcDialog(QDialog):
 
     # ----------------------------------------------------------------
     def _run(self):
+        title = self.T('plugin.title')
         layer = self.layer_combo.currentLayer()
         if layer is None or not isinstance(layer, QgsVectorLayer):
-            QMessageBox.warning(self, 'QgisTreeBenefits', 'Seleziona un layer di punti valido.')
+            QMessageBox.warning(self, title, self.T('msg.need.layer'))
             return
         if not self._is_point_layer(layer):
-            QMessageBox.warning(self, 'QgisTreeBenefits', 'Il layer deve essere di tipo punto.')
+            QMessageBox.warning(self, title, self.T('msg.need.point'))
             return
 
         out_crs = self.crs_widget.crs()
@@ -271,21 +362,21 @@ class OreblaCalcDialog(QDialog):
             tr_out = QgsCoordinateTransform(src, out_crs, QgsProject.instance())
 
         out_pt = QgsVectorLayer('Point?crs=%s' % out_crs.authid(),
-                                'Alberi - benefici (Orebla)', 'memory')
+                                self.T('layer.out.points'), 'memory')
         op = out_pt.dataProvider()
         in_fields = [layer.fields().at(i) for i in range(layer.fields().count())]
         op.addAttributes(in_fields)
-        op.addAttributes([QgsField(nm, typ) for nm, typ, _d in F.OUT_FIELDS])
+        op.addAttributes([QgsField(nm, typ) for nm, typ in F.OUT_FIELDS])
         out_pt.updateFields()
 
         out_poly = None
         pp = None
         if do_buffer:
             out_poly = QgsVectorLayer('Polygon?crs=%s' % out_crs.authid(),
-                                      'Aree di influenza (Orebla)', 'memory')
+                                      self.T('layer.out.polygons'), 'memory')
             pp = out_poly.dataProvider()
             pp.addAttributes(in_fields)
-            pp.addAttributes([QgsField(nm, typ) for nm, typ, _d in F.OUT_FIELDS])
+            pp.addAttributes([QgsField(nm, typ) for nm, typ in F.OUT_FIELDS])
             out_poly.updateFields()
 
         n_tot = n_no_sp = n_no_pr = 0
@@ -321,9 +412,9 @@ class OreblaCalcDialog(QDialog):
                                 do_co2_avanzata=do_co2av, rid_patologia=rid,
                                 do_mobilita=do_mob, km_eco=p.get('km_eco'))
 
-            vals = F.build_out_attr_dict(feat.attributes(), res, sp, pr)
+            vals = F.build_out_attr_dict(feat.attributes(), res, sp, pr, lang=self.lang)
             attrs = list(feat.attributes())
-            for nm, _typ, _d in F.OUT_FIELDS:
+            for nm, _typ in F.OUT_FIELDS:
                 v = vals.get(nm)
                 attrs.append(v if v is not None else NULL)
 
@@ -349,29 +440,41 @@ class OreblaCalcDialog(QDialog):
 
         op.addFeatures(pt_feats)
         try:
-            OL.configure_output_layer(out_pt)
+            OL.configure_output_layer(out_pt, self.lang)
         except Exception:
             pass
         QgsProject.instance().addMapLayer(out_pt)
         if out_poly is not None:
             pp.addFeatures(poly_feats)
             try:
-                OL.configure_output_layer(out_poly)
+                OL.configure_output_layer(out_poly, self.lang)
             except Exception:
                 pass
             QgsProject.instance().addMapLayer(out_poly)
 
-        msg = 'Calcolo completato su %d alberi. Output in %s.' % (n_tot, out_crs.authid())
+        msg = self.T('msg.done') % (n_tot, out_crs.authid())
         extra = []
         if n_no_sp:
-            extra.append('%d senza specie riconosciuta (default)' % n_no_sp)
+            extra.append(self.T('msg.no.species') % n_no_sp)
         if n_no_pr:
-            extra.append('%d senza provincia (no valore ornamentale)' % n_no_pr)
+            extra.append(self.T('msg.no.prov') % n_no_pr)
         if extra:
             msg += '\n' + '; '.join(extra) + '.'
         try:
             self.iface.messageBar().pushInfo('QgisTreeBenefits', msg)
         except Exception:
             pass
-        QMessageBox.information(self, 'QgisTreeBenefits', msg)
+        QMessageBox.information(self, title, msg)
         self.accept()
+
+
+def _refresh_provider():
+    """Aggiorna i nomi degli algoritmi nella Cassetta degli strumenti dopo un
+    cambio di lingua."""
+    try:
+        from qgis.core import QgsApplication
+        prov = QgsApplication.processingRegistry().providerById('qgistreebenefits')
+        if prov is not None:
+            prov.refreshAlgorithms()
+    except Exception:
+        pass
