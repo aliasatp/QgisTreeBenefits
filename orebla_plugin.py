@@ -10,6 +10,7 @@ from qgis.PyQt.QtWidgets import QAction, QInputDialog
 from qgis.core import QgsApplication
 from .provider import OreblaProvider
 from . import orebla_i18n as I18N
+from . import orebla_log as LOG
 
 
 class OreblaPlugin:
@@ -84,5 +85,5 @@ class OreblaPlugin:
         if self.provider is not None:
             try:
                 self.provider.refreshAlgorithms()
-            except Exception:
-                pass
+            except Exception as exc:
+                LOG.ignored('aggiornamento della Cassetta degli strumenti', exc)

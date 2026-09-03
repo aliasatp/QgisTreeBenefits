@@ -2890,15 +2890,15 @@ SPECIE_DATA = [
 #     computed on an average Italian basis using the same RAM logistic curve.
 #     It is an approximation - where a national/local reference exists, use it.
 PROVINCE_EXTRA_SIGLA = "ZZ"
-PROVINCE_EXTRA_ALIASES = ("ZZ", "XX", "INT", "INTL", "EXTRA", "EXTRA-ITALIA",
-                          "EXTRA ITALIA", "EXTRAITALIA", "NON-ITALY", "NON ITALY",
-                          "OUTSIDE ITALY", "AVERAGE", "MEDIA", "MEDIA ITALIA")
 
 PROVINCE_DATA = [
     {
         "prov": "Media Italia (uso extra-Italia)",
         "prov_en": "Italy average (non-Italian use)",
         "sigla": "ZZ",
+        "aliases": ["XX", "INT", "INTL", "EXTRA", "EXTRA-ITALIA", "EXTRA ITALIA",
+                    "EXTRAITALIA", "NON-ITALY", "NON ITALY", "OUTSIDE ITALY",
+                    "AVERAGE", "MEDIA", "MEDIA ITALIA"],
         "cat": 5,
         "valmax": 112399.79
     },

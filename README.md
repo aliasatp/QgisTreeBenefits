@@ -189,6 +189,13 @@ I campi non calcolabili (input mancanti) restano NULL, come la webapp.
 
 In QGIS: *Layer → Aggiungi layer testo delimitato*, geometria WKT, campo `wkt`.
 
+## Diagnostica
+
+Le operazioni opzionali (API diverse fra Qt5 e Qt6, geometrie non valide,
+configurazione del modulo attributi) non interrompono l'elaborazione ma vengono
+registrate in *Vista → Pannelli → Log dei messaggi*, scheda **QgisTreeBenefits**.
+Se qualcosa non si comporta come previsto, quella scheda dice cosa e` stato saltato.
+
 ## Note
 
 - Il plugin funziona da Cassetta strumenti, da **Modellatore grafico** e in

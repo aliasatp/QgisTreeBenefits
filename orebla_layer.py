@@ -22,6 +22,7 @@ from qgis.core import (
 
 from . import orebla_fields as F
 from . import orebla_i18n as I18N
+from . import orebla_log as LOG
 
 TAB_KEYS = ['base', 'avanzati', 'clima']
 
@@ -55,9 +56,9 @@ def _apply_tabs(layer, groups):
     cfg = layer.editFormConfig()
     try:
         cfg.clearTabs()
-    except Exception:
-        pass
-    cfg.setLayout(QgsEditFormConfig.TabLayout)
+    except Exception as exc:
+        LOG.ignored('clearTabs() non disponibile in questa versione di QGIS', exc)
+    cfg.setLayout(QgsEditFormConfig.EditorLayout.TabLayout)
     try:
         root = cfg.invisibleRootContainer()
     except Exception:
@@ -70,12 +71,12 @@ def _apply_tabs(layer, groups):
         container = QgsAttributeEditorContainer(title, root)
         try:
             container.setIsGroupBox(False)   # rendi TAB, non group-box
-        except Exception:
-            pass
+        except Exception as exc:
+            LOG.ignored('setIsGroupBox() non disponibile: il gruppo resta group-box', exc)
         try:
             container.setColumnCount(2)
-        except Exception:
-            pass
+        except Exception as exc:
+            LOG.ignored('setColumnCount() non disponibile: scheda a una colonna', exc)
         for n in present:
             idx = layer.fields().indexOf(n)
             container.addChildElement(QgsAttributeEditorField(n, idx, container))
@@ -99,9 +100,9 @@ def configure_tree_layer(layer, lang=None):
     apply_value_maps_and_aliases(layer, lang)
     try:
         apply_tab_form(layer, lang)
-    except Exception:
+    except Exception as exc:
         # Se la versione di QGIS differisce, il layer resta valido senza i TAB.
-        pass
+        LOG.ignored('modulo attributi a schede non applicato all\'inventario', exc)
 
 
 # --------------------------------------------------------------------
@@ -148,8 +149,8 @@ def configure_output_layer(layer, lang=None):
 
     try:
         _apply_tabs(layer, groups)
-    except Exception:
-        pass
+    except Exception as exc:
+        LOG.ignored('schede del layer dei risultati non applicate', exc)
 
 
 def create_tree_layer(crs_authid, name=None, lang=None):
@@ -180,8 +181,8 @@ class TreeLayerPostProcessor(QgsProcessingLayerPostProcessorInterface):
     def postProcessLayer(self, layer, context, feedback):
         try:
             configure_tree_layer(layer, getattr(self, 'lang', None))
-        except Exception:
-            pass
+        except Exception as exc:
+            LOG.ignored('configurazione del layer inventario creato', exc)
 
 
 class OutputLayerPostProcessor(QgsProcessingLayerPostProcessorInterface):
@@ -199,5 +200,5 @@ class OutputLayerPostProcessor(QgsProcessingLayerPostProcessorInterface):
     def postProcessLayer(self, layer, context, feedback):
         try:
             configure_output_layer(layer, getattr(self, 'lang', None))
-        except Exception:
-            pass
+        except Exception as exc:
+            LOG.ignored('configurazione del layer dei risultati', exc)

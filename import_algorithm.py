@@ -28,6 +28,7 @@ from .orebla_data import SPECIE_DATA
 from . import orebla_layer as OL
 from . import orebla_about as ABOUT
 from . import orebla_i18n as I18N
+from . import orebla_log as LOG
 
 
 class OreblaImportAlgorithm(QgsProcessingAlgorithm):
@@ -72,7 +73,8 @@ class OreblaImportAlgorithm(QgsProcessingAlgorithm):
 
     def initAlgorithm(self, config=None):
         self.addParameter(QgsProcessingParameterFeatureSource(
-            self.INPUT, I18N.tr('alg2.p.in'), [QgsProcessing.TypeVectorPoint]))
+            self.INPUT, I18N.tr('alg2.p.in'),
+            [QgsProcessing.SourceType.TypeVectorPoint]))
 
         self.addParameter(QgsProcessingParameterField(
             self.F_SPECIE, I18N.tr('alg2.p.specie'),
@@ -82,7 +84,7 @@ class OreblaImportAlgorithm(QgsProcessingAlgorithm):
             p = QgsProcessingParameterField(
                 key, label, parentLayerParameterName=self.INPUT, optional=True)
             if num:
-                p.setDataType(QgsProcessingParameterField.Numeric)
+                p.setDataType(QgsProcessingParameterField.DataType.Numeric)
             self.addParameter(p)
 
         fld(self.F_COD, I18N.tr('alg2.p.cod'))
@@ -98,7 +100,8 @@ class OreblaImportAlgorithm(QgsProcessingAlgorithm):
             self.LANG, I18N.tr('alg1.p.lang'), options=self._lang_options(),
             defaultValue=0))
         self.addParameter(QgsProcessingParameterFeatureSink(
-            self.OUTPUT, I18N.tr('alg2.p.out'), QgsProcessing.TypeVectorPoint))
+            self.OUTPUT, I18N.tr('alg2.p.out'),
+            QgsProcessing.SourceType.TypeVectorPoint))
 
     def processAlgorithm(self, parameters, context, feedback):
         source = self.parameterAsSource(parameters, self.INPUT, context)
@@ -129,7 +132,8 @@ class OreblaImportAlgorithm(QgsProcessingAlgorithm):
             fields.append(f)
 
         (sink, dest_id) = self.parameterAsSink(
-            parameters, self.OUTPUT, context, fields, QgsWkbTypes.Point, out_crs)
+            parameters, self.OUTPUT, context, fields,
+            QgsWkbTypes.Type.Point, out_crs)
         if sink is None:
             raise QgsProcessingException(I18N.tr('alg1.err', lang))
 
@@ -150,8 +154,8 @@ class OreblaImportAlgorithm(QgsProcessingAlgorithm):
             if not geom.isEmpty() and tr is not None:
                 try:
                     geom.transform(tr)
-                except Exception:
-                    pass
+                except Exception as exc:
+                    LOG.ignored('riproiezione della geometria nel CRS di output', exc)
             nf.setGeometry(geom)
 
             if sp_field:

@@ -34,28 +34,31 @@ from . import orebla_fields as F
 from . import orebla_about as ABOUT
 from . import orebla_layer as OL
 from . import orebla_i18n as I18N
+from . import orebla_log as LOG
 
 
 TAB_KEYS = ['base', 'avanzati', 'clima']
 
 
 def _set_point_filter(combo):
-    """Imposta il filtro 'solo layer puntuali' in modo robusto su Qt5/Qt6."""
-    try:
-        from qgis.core import QgsMapLayerProxyModel
-        try:
-            combo.setFilters(QgsMapLayerProxyModel.Filter.PointLayer)
-            return
-        except Exception:
-            combo.setFilters(QgsMapLayerProxyModel.PointLayer)
-            return
-    except Exception:
-        pass
+    """Imposta il filtro 'solo layer puntuali' in modo robusto su Qt5/Qt6.
+
+    Si usano solo le forme "scoped" degli enum, valide sia con PyQt5 (sip >= 4.19.9,
+    quindi tutte le versioni di QGIS 3 supportate) sia con PyQt6 / QGIS 4.
+    Qgis.LayerFilter e' la collocazione moderna; QgsMapLayerProxyModel.Filter
+    resta come ripiego per le versioni di QGIS 3 che non la espongono ancora.
+    """
     try:
         from qgis.core import Qgis
         combo.setFilters(Qgis.LayerFilter.PointLayer)
-    except Exception:
-        pass
+        return
+    except Exception as exc:
+        LOG.ignored('filtro layer puntuali (Qgis.LayerFilter)', exc)
+    try:
+        from qgis.core import QgsMapLayerProxyModel
+        combo.setFilters(QgsMapLayerProxyModel.Filter.PointLayer)
+    except Exception as exc:
+        LOG.ignored('filtro layer puntuali (QgsMapLayerProxyModel.Filter)', exc)
 
 
 def _auto_utm_crs(layer=None):
@@ -74,8 +77,8 @@ def _auto_utm_crs(layer=None):
                 lon, lat = pt.x(), pt.y()
             else:
                 lon, lat = cx, cy
-    except Exception:
-        pass
+    except Exception as exc:
+        LOG.ignored('fuso UTM automatico dal layer: uso i valori predefiniti', exc)
     return QgsCoordinateReferenceSystem(F.utm_epsg_from_lonlat(lon, lat))
 
 
@@ -282,8 +285,8 @@ class OreblaCalcDialog(QDialog):
             self.crs_widget.setCrs(crs)
         try:
             self.tabs.setCurrentIndex(int(state.get('tab') or 0))
-        except Exception:
-            pass
+        except Exception as exc:
+            LOG.ignored('ripristino della scheda attiva dopo il cambio lingua', exc)
 
     # ----------------------------------------------------------------
     def _on_lang_changed(self, *args):
@@ -328,7 +331,8 @@ class OreblaCalcDialog(QDialog):
     # ----------------------------------------------------------------
     def _is_point_layer(self, layer):
         try:
-            return QgsWkbTypes.geometryType(layer.wkbType()) == QgsWkbTypes.PointGeometry
+            return (QgsWkbTypes.geometryType(layer.wkbType())
+                    == QgsWkbTypes.GeometryType.PointGeometry)
         except Exception:
             return True
 
@@ -396,8 +400,8 @@ class OreblaCalcDialog(QDialog):
                     if tr_wgs is not None:
                         pt = tr_wgs.transform(pt)
                     lat = pt.y()
-                except Exception:
-                    pass
+                except Exception as exc:
+                    LOG.ignored('latitudine dalla geometria del punto', exc)
             p['latitudine'] = lat
 
             sp = C.find_specie(p.get('specie'), self._sp_id, self._sp_name)
@@ -422,8 +426,8 @@ class OreblaCalcDialog(QDialog):
             if not geom.isEmpty() and tr_out is not None:
                 try:
                     geom.transform(tr_out)
-                except Exception:
-                    pass
+                except Exception as exc:
+                    LOG.ignored('riproiezione della geometria nel CRS di output', exc)
 
             nf = QgsFeature(out_pt.fields())
             nf.setGeometry(geom)
@@ -441,15 +445,15 @@ class OreblaCalcDialog(QDialog):
         op.addFeatures(pt_feats)
         try:
             OL.configure_output_layer(out_pt, self.lang)
-        except Exception:
-            pass
+        except Exception as exc:
+            LOG.ignored('configurazione del layer di output (punti)', exc)
         QgsProject.instance().addMapLayer(out_pt)
         if out_poly is not None:
             pp.addFeatures(poly_feats)
             try:
                 OL.configure_output_layer(out_poly, self.lang)
-            except Exception:
-                pass
+            except Exception as exc:
+                LOG.ignored('configurazione del layer di output (poligoni)', exc)
             QgsProject.instance().addMapLayer(out_poly)
 
         msg = self.T('msg.done') % (n_tot, out_crs.authid())
@@ -462,8 +466,8 @@ class OreblaCalcDialog(QDialog):
             msg += '\n' + '; '.join(extra) + '.'
         try:
             self.iface.messageBar().pushInfo('QgisTreeBenefits', msg)
-        except Exception:
-            pass
+        except Exception as exc:
+            LOG.ignored('notifica nella barra dei messaggi', exc)
         QMessageBox.information(self, title, msg)
         self.accept()
 
@@ -476,5 +480,5 @@ def _refresh_provider():
         prov = QgsApplication.processingRegistry().providerById('qgistreebenefits')
         if prov is not None:
             prov.refreshAlgorithms()
-    except Exception:
-        pass
+    except Exception as exc:
+        LOG.ignored('aggiornamento della Cassetta degli strumenti', exc)

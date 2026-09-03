@@ -218,6 +218,13 @@ Fields that cannot be computed (missing inputs) stay NULL, as in the webapp.
 
 In QGIS: *Layer → Add Delimited Text Layer*, WKT geometry, field `wkt`.
 
+## Diagnostics
+
+Optional operations (APIs that differ between Qt5 and Qt6, invalid geometries,
+attribute-form configuration) never abort a run, but they are recorded in
+*View → Panels → Log Messages*, tab **QgisTreeBenefits**. If something does not
+behave as expected, that tab tells you what was skipped.
+
 ## Notes
 
 - The plugin works from the Toolbox, the **Graphical Modeler** and in **batch**,

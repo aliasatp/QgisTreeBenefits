@@ -572,6 +572,9 @@ def build_indexes(specie_data, province_data):
     for pr in province_data:
         pr_by_sigla[pr['sigla'].strip().upper()] = pr
         pr_by_name[pr['prov'].strip().lower()] = pr
+        # sigle alternative dichiarate nel dataset (voce generica extra-Italia)
+        for alias in pr.get('aliases', ()):
+            pr_by_sigla[str(alias).strip().upper()] = pr
         # nomi tradotti (solo la voce generica extra-Italia ne ha)
         for k, v in pr.items():
             if k.startswith('prov_') and v:
@@ -614,13 +617,6 @@ def find_provincia(value, pr_by_sigla, pr_by_name):
         return pr_by_sigla[key.upper()]
     if key.lower() in pr_by_name:
         return pr_by_name[key.lower()]
-    # alias della voce generica extra-Italia
-    try:
-        from .orebla_data import PROVINCE_EXTRA_SIGLA, PROVINCE_EXTRA_ALIASES
-        if key.upper() in PROVINCE_EXTRA_ALIASES:
-            return pr_by_sigla.get(PROVINCE_EXTRA_SIGLA)
-    except Exception:
-        pass
     return None
 
 

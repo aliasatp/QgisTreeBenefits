@@ -20,6 +20,8 @@ La lingua e' salvata nelle impostazioni QGIS (chiave QgisTreeBenefits/language)
 e puo' valere 'auto', 'it' o 'en'.
 """
 
+from . import orebla_log as LOG
+
 DEFAULT_LANG = 'it'
 LANGS = [('it', 'Italiano'), ('en', 'English')]
 LANG_CODES = [c for c, _ in LANGS]
@@ -76,8 +78,8 @@ def set_language(code):
     try:
         from qgis.PyQt.QtCore import QSettings
         QSettings().setValue(SETTINGS_KEY, code)
-    except Exception:
-        pass
+    except Exception as exc:
+        LOG.ignored('salvataggio della lingua nelle impostazioni QGIS', exc)
     return code
 
 

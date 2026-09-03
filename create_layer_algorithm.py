@@ -53,7 +53,8 @@ class OreblaCreateLayerAlgorithm(QgsProcessingAlgorithm):
             self.LANG, I18N.tr('alg1.p.lang'), options=self._lang_options(),
             defaultValue=0))
         self.addParameter(QgsProcessingParameterFeatureSink(
-            self.OUTPUT, I18N.tr('alg1.p.out'), QgsProcessing.TypeVectorPoint))
+            self.OUTPUT, I18N.tr('alg1.p.out'),
+            QgsProcessing.SourceType.TypeVectorPoint))
 
     def processAlgorithm(self, parameters, context, feedback):
         crs = self.parameterAsCrs(parameters, self.CRS, context)
@@ -65,7 +66,7 @@ class OreblaCreateLayerAlgorithm(QgsProcessingAlgorithm):
             fields.append(f)
 
         (sink, dest_id) = self.parameterAsSink(
-            parameters, self.OUTPUT, context, fields, QgsWkbTypes.Point, crs)
+            parameters, self.OUTPUT, context, fields, QgsWkbTypes.Type.Point, crs)
         if sink is None:
             raise QgsProcessingException(I18N.tr('alg1.err', lang))
 
