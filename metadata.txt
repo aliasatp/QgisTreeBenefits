@@ -16,7 +16,28 @@ icon=icon.png
 experimental=False
 deprecated=False
 hasProcessingProvider=yes
-changelog=0.4.2 - Compatibilita Qt6/QGIS 4: tutti gli enum delle classi QGIS usano ora la forma "scoped" (QgsProcessing.SourceType.TypeVectorPoint, QgsWkbTypes.Type.Point, QgsWkbTypes.GeometryType.PointGeometry, QgsProcessingParameterField.DataType.Numeric, QgsEditFormConfig.EditorLayout.TabLayout, Qgis.LayerFilter.PointLayer, Qgis.MessageLevel.Info). La forma scoped e supportata da sip 4.19.9 / PyQt 5.11 in poi, quindi resta valida su tutte le versioni di QGIS 3 supportate. Nessuna modifica alle formule. / Qt6/QGIS 4 compatibility: all QGIS class enums use the scoped form, still valid on QGIS 3.
-    0.4.1 - Revisione per la scansione di sicurezza del repository QGIS: eliminati tutti i blocchi "try/except/pass" (Bandit B110). Le eccezioni volutamente non bloccanti sono ora registrate nel Log dei messaggi di QGIS, scheda "QgisTreeBenefits", tramite il nuovo modulo orebla_log.py. Gli alias della voce ZZ sono dichiarati nel dataset invece che risolti con un import protetto. Nessuna modifica alle formule: risultati numerici invariati. / Security-scan revision: no try/except/pass left, non-blocking exceptions are logged to the QGIS message log; unchanged results.
-    0.4 - Interfaccia bilingue IT/EN (selettore di lingua nella finestra di stima e nel menu Plugin; parametro "lingua" negli algoritmi Processing). Tradotte etichette dei campi, voci delle tendine, messaggi, guida e informazioni. Aggiunta la voce di riferimento generica "Media Italia (uso extra-Italia)" - sigla ZZ - con valmax pari alla media delle 107 province, per l'uso fuori dall'Italia. Nomi dei campi e valori memorizzati invariati: piena compatibilita con i progetti v0.3 e risultati numerici identici. Nuovo dataset di esempio internazionale. / Bilingual IT/EN interface, generic "Italy average" reference area for non-Italian use, unchanged field names, stored values and numeric results.
-    0.3 - Finestra a schede per la stima benefici, importazione guidata, output in UTM con aree di influenza.
+changelog=
+    0.4.2
+    - Interfaccia bilingue italiano/inglese: selettore nella finestra di stima,
+      voce nel menu Plugin e parametro "lingua" negli algoritmi Processing.
+      Tradotte etichette dei campi, voci dei menu a tendina, messaggi, guida e info.
+    - Nuova voce di riferimento "Media Italia (uso extra-Italia)", sigla ZZ, con
+      valore massimo pari alla media delle 107 province: consente di usare il
+      plugin fuori dall'Italia. Latitudine e fuso UTM funzionano in entrambi gli
+      emisferi.
+    - Nuovo dataset di esempio internazionale (Lisbona, Lione, Sydney).
+    - Compatibilita Qt6 / QGIS 4: gli enum delle classi QGIS usano la forma
+      "scoped", valida anche su QGIS 3.
+    - Le eccezioni non bloccanti sono registrate nel Log dei messaggi di QGIS
+      (scheda QgisTreeBenefits) invece di essere ignorate in silenzio.
+    - Nomi dei campi e valori memorizzati invariati rispetto alla 0.3: i progetti
+      e gli inventari esistenti continuano a funzionare senza conversioni e i
+      risultati numerici sono identici.
+    - EN: bilingual IT/EN interface; generic "Italy average" reference area for
+      use outside Italy; Qt6/QGIS 4 scoped enums; unchanged field names, stored
+      values and numeric results.
+    0.4.1 - Revisione di sicurezza (versione non pubblicata).
+    0.4 - Prima versione bilingue (versione non pubblicata).
+    0.3
+    - Finestra a schede per la stima dei benefici, importazione guidata di layer
+      alberi esistenti, output in UTM con generazione delle aree di influenza.
